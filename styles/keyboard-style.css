@@ -1,0 +1,41 @@
+.keyboard-wrapper {
+    display:flex;
+    flex-direction:column;
+    width:500px;
+  }
+  .keyboard-row {
+    margin-bottom:4px;
+    display:flex;
+    justify-content:space-evenly;
+  }
+  .btn {
+    padding: 10px 0px;
+    width: 46px;
+    background:#4d86d5;
+    color:#fff;
+    display:inline-block;
+    text-align:center;
+    vertical-align:middle;
+    cursor:pointer;
+    border-radius:8px;
+    position:relative;
+  }
+  .btn[data-alt]:after {
+      content: attr(data-alt);
+      position: absolute;
+      top: 0;
+      left: 5px;
+      font-size: 78%;
+  }  
+  .btn-space {
+    flex-basis:70%;
+  }
+  .btn-action {
+    background:#565656;
+  }
+  
+  .keyboard-numeric .btn-key {
+      width: 30%;
+      height: 50px;
+    font-size:20px;
+  }
