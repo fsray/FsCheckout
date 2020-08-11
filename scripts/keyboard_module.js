@@ -56,6 +56,7 @@ var kiosk = function () {
             $(".navbar").slideUp();
         },
         changeCursorPosition = function(event) {
+            console.log('changeCursorPosition',event);
             document.cursorPosition = $(this)[0].selectionStart;
         },
         clearCursorTracking = function (ctrl) {
@@ -151,7 +152,7 @@ var kiosk = function () {
             }
         },
         onKeyPress = function (key,isAlt) {
-            console.log(key);
+            console.log(document.caretPosition,key);
             if (key) {
                 if (!$(key).hasClass('disabled')) {
                     var keyData = $(key).data('key');
@@ -200,7 +201,9 @@ var kiosk = function () {
                                     
                                     $(document.keyboardInput).val(value);
                                 }
-                                if (document.hasValidated) $(document.keyboardInput).valid();
+                                if (document.hasValidated) {
+                                    $(document.keyboardInput).valid();
+                                }
                                 document.keyboardInput.setSelectionRange(document.caretPosition, document.caretPosition);
                                 return;
                             }
@@ -222,13 +225,16 @@ var kiosk = function () {
                                     keyData = keyData?.toUpperCase();
                                 }
                                 value = value.substring(0, document.caretPosition) + keyData + value.substring(document.caretPosition, value.length);
-                                document.caretPosition += keyData.length;
+                                document.caretPosition += keyData.toString().length;
+                                console.log(document.caretPosition);
                                 $(document.keyboardInput).val(value);
                                 // undo shift if selected
                                 document.keyboardShift = false;
                                 updateKeyState();
 
-                                if (document.hasValidated) $(document.keyboardInput).valid();
+                                if (document.hasValidated) {
+                                    $(document.keyboardInput).valid();
+                                }
                                 document.keyboardInput.setSelectionRange(document.caretPosition, document.caretPosition);
                             }
                         }
