@@ -104,7 +104,7 @@ if (true){
     
   }
 
-  document.body.prepend(l);
+document.body.insertBefore(l,document.body.firstChild);
   $(document).ready(function(){
     l.onchange();
   })
