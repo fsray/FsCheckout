@@ -52,8 +52,6 @@ var templateManager = (function(){
         }
     }
 
-    alert(window.location.protocol);
-
     // for c# Window.External override
     if (typeof window.external.templateLoader !== "undefined" 
     && window.location.protocol !== "http:"){
