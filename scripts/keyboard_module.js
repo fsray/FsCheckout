@@ -13,7 +13,6 @@ var kiosk = function () {
     var _keyboardSelector = null;
 
     var settings = {
-      autoHide:false,
       showAlways:true,
       autoStart: false,
       longPressTimer: 500
@@ -400,4 +399,4 @@ var kiosk = function () {
     };
 }
 
-kiosk = new kiosk;
+kiosk = new kiosk();
