@@ -16,7 +16,7 @@ var kiosk = function () {
       autoHide:false,
       showAlways:true,
       autoStart: false,
-      longPressTimer: 1000
+      longPressTimer: 500
     };
 
 
@@ -56,7 +56,6 @@ var kiosk = function () {
             $(".navbar").slideUp();
         },
         changeCursorPosition = function(event) {
-            console.log('changeCursorPosition',event);
             document.cursorPosition = $(this)[0].selectionStart;
         },
         clearCursorTracking = function (ctrl) {
@@ -117,9 +116,12 @@ var kiosk = function () {
                 }, keyboardDropTime);
             }
         },
-        updateKeyState = function() {
+        updateKeyState = function(isAlt) {
             console.log('updateKeyState');
             // update the keyboard
+            if (isAlt){
+                return;
+            }
             var keyboard = $(_keyboardSelector);
             if (keyboard) {
                 var capsKey = keyboard.find(".btn-caps");
@@ -141,37 +143,48 @@ var kiosk = function () {
                     rightShiftKey.addClass('selected');
                     keyboard.addClass('keyboard-caps');   
                 }
-              
-              if (document.keyboardCaps || document.keyboardShift){
-                $('.btn-key').addClass('btn-caps');
-              }
-              else if (!document.keyboardCaps && !document.keyboardShift){
-                $('.btn-key').removeClass('btn-caps');
-                
-              }
             }
         },
+        toggleAltValues = function(){
+            $('.btn-key[data-alt]').each(function(i,e){
+                var k = e.getAttribute('data-key');
+                var a = e.getAttribute('data-alt');
+                e.setAttribute('data-key',a);
+                e.setAttribute('data-alt',k)
+                e.innerText = a;
+            })
+        },
         onKeyPress = function (key,isAlt) {
-            console.log(document.caretPosition,key);
             if (key) {
                 if (!$(key).hasClass('disabled')) {
                     var keyData = $(key).data('key');
 
-                    // if (isAlt){
-                    //     keyData = $(key).data('alt');
-                    // }
+                    // grab the "long-press" character
+                    if (isAlt){
+                        keyData = $(key).data('alt');
+                    }
+                    // "long-press" will also trigger normal-press, so bail if that's the case.
+                    if (!isAlt && key.handled){
+                        key.handled = false;
+                        // cleanup from long-press
+                        setTimeout(function(){
+                            $(key).removeClass('key-held');
+                            updateKeyState(false);
+                        },200);
+                        
+                        return;
+                    }
 
                     if (keyData !== null) {
                         
                         // handle shift key pressed
                         if (keyData === 'shift') {
-                            console.log('shift');
                             if (document.keyboardCaps) {
                                 document.keyboardShift = false;
                             } else {
                                 document.keyboardShift = !(document.keyboardShift);
                             }
-                            updateKeyState();
+                            updateKeyState(isAlt);
                             document.keyboardInput.setSelectionRange(document.caretPosition, document.caretPosition);
                             return;
                         }
@@ -183,7 +196,7 @@ var kiosk = function () {
                             }
 
                             document.keyboardCaps = !(document.keyboardCaps);
-                            updateKeyState();
+                            updateKeyState(isAlt);
                             document.keyboardInput.setSelectionRange(document.caretPosition, document.caretPosition);
                             return;
                         }
@@ -221,16 +234,15 @@ var kiosk = function () {
                                 document.hasValidated = true;
                                 $(document.keyboardInput).closest('form').submit();
                             } else {
-                                if (document.keyboardCaps || document.keyboardShift) {
-                                    keyData = keyData?.toUpperCase();
+                                if ((document.keyboardCaps || document.keyboardShift) && keyData != null) {
+                                    keyData = keyData.toString().toUpperCase();
                                 }
                                 value = value.substring(0, document.caretPosition) + keyData + value.substring(document.caretPosition, value.length);
                                 document.caretPosition += keyData.toString().length;
-                                console.log(document.caretPosition);
                                 $(document.keyboardInput).val(value);
                                 // undo shift if selected
                                 document.keyboardShift = false;
-                                updateKeyState();
+                                updateKeyState(isAlt);
 
                                 if (document.hasValidated) {
                                     $(document.keyboardInput).valid();
@@ -271,22 +283,22 @@ var kiosk = function () {
                 var navbar = $(selector);
                 _keyboardSelector = selector;
 
-                console.log('init keyboard' , selector);
                 $(selector + " .btn-key").click(function () {
-                    console.log('keypress');
                     onKeyPress(this);
                 });
                 // // long press:
-                // $(selector + " .btn-key[data-alt]").mouseup(function(){
-                //     console.log('long pressing');
-                //     clearTimeout(pressTimer);
-                //     return false;
-                // }).mousedown(function(event){
-                //     pressTimer = window.setTimeout(function(){
-                //         //onKeyPress(event.target,true);
-                //     },settings.longPressTimer);
-                //     return false;
-                // });
+                $(selector + " .btn-key[data-alt]").mouseup(function(){
+                    console.log('long pressing');
+                    clearTimeout(pressTimer);
+                    return false;
+                }).mousedown(function(event){
+                    pressTimer = window.setTimeout(function(){
+                        event.target.handled = true;
+                        $(event.target).addClass('key-held');
+                        onKeyPress(event.target,true);
+                    },settings.longPressTimer);
+                    return false;
+                });
 
                 if (settings.showAlways)
                 {
@@ -380,7 +392,6 @@ var kiosk = function () {
         };
   
   //init();
-    
     return {
         navigateBack: navigateBack,
         hideEmptyInventory: hideEmptyInventory,

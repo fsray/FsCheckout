@@ -1,4 +1,4 @@
-<link href="../styles/keyboard-style.css" rel="stylesheet" />
+<link href="styles/keyboard-style.css" rel="stylesheet" />
 <div class="keyboard-chooser">
   <span>Select Keyboard:</span>
   <a href="javascript:showKeyboard(0)">Normal</a>
@@ -17,7 +17,7 @@
     <button class="btn btn-key" data-key="8"data-alt="*">8</button>
     <button class="btn btn-key" data-key="9"data-alt="(">9</button>
     <button class="btn btn-key" data-key="0"data-alt=")">0</button>
-    <button class="btn btn-key" data-key="0"data-alt="_">_</button>
+    <button class="btn btn-key" data-key="-"data-alt="_">-</button>
   </div>
   <div class="keyboard-row">
     <button class="btn btn-key" data-key="q">q</button>
@@ -84,11 +84,15 @@
     <button class="btn btn-key btn-action" data-key="bksp">Back</button>
   </div>
 </div>
-<script src="../scripts/keyboard_module.js"></script>
-<script>
-  kiosk.startKeyboard('.keyboard-wrapper.keyboard-numeric');
-  kiosk.startKeyboard('.keyboard-wrapper.keyboard-normal');
 
+<script>
+
+  (function kioskLoaded(){
+      console.log('loading keyboards...');
+      kiosk.startKeyboard('.keyboard-wrapper.keyboard-numeric');
+      kiosk.startKeyboard('.keyboard-wrapper.keyboard-normal');
+  })();
+ 
   function showKeyboard(type){
     $('.keyboard-wrapper').hide();
     switch(type){

@@ -33,9 +33,24 @@
   .btn-action {
     background:#565656;
   }
-  
+  .keyboard-caps .btn-key:not(.btn-action) {
+    text-transform: uppercase;
+  }
   .keyboard-numeric .btn-key {
       width: 30%;
       height: 50px;
     font-size:20px;
   }
+
+.btn-key.key-held {
+    font-size: 0;
+}
+.btn-key.key-held:before {
+    content:attr(data-alt);
+    font-size:20px;
+    position:absolute;
+    width:100%;
+    top:5px;
+    left:0;
+    text-align:center;
+}

@@ -52,10 +52,16 @@ var templateManager = (function(){
         }
     }
 
+    alert(window.location.protocol);
+
     // for c# Window.External override
-    if (window.external.templateLoader !== undefined){
+    if (typeof window.external.templateLoader !== "undefined" 
+    && window.location.protocol !== "http:"){
         loadTemplate = function(path,name){
-            console.log('OVERRIDE',path,name);
+            var r = window.external.templateLoader(path,name);
+            if (r != null){
+                templateList.push(new template(path,r,name));
+            }
         }
     }
 
