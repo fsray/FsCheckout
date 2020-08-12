@@ -74,11 +74,13 @@ var templateManager = (function(){
 
 // list of template ['path','name']
 var templates = [
+    ['handlebars-template/start.html','start'],
     ['handlebars-template/keyboard-layout.html','keyboard'],
     ['handlebars-template/help.html','help-page'],
     ['handlebars-template/pin-pad.html','pin-pad'],
     ['handlebars-template/scan.html','scan'],
     ['handlebars-template/thank-you.html','thank-you'],
+    
 ];
 
 for(var i = 0; i < templates.length; i++){
