@@ -398,4 +398,6 @@ var kiosk = function () {
         showKeyboard: showKeyboard,
         startKeyboard: init
     };
-}();
+}
+
+kiosk = new kiosk;

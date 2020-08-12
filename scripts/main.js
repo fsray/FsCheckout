@@ -75,8 +75,37 @@ var templateManager = (function(){
 // list of template ['path','name']
 var templates = [
     ['handlebars-template/keyboard-layout.html','keyboard'],
+    ['handlebars-template/help.html','help-page'],
+    ['handlebars-template/pin-pad.html','pin-pad'],
+    ['handlebars-template/scan.html','scan'],
+    ['handlebars-template/thank-you.html','thank-you'],
 ];
 
 for(var i = 0; i < templates.length; i++){
     templateManager.AddTemplate(templates[i][0],templates[i][1]);
+}
+
+if (true){
+  // create a dropdown for easily flipping between views... for fun!
+  var l = document.createElement('select');
+  l.onchange = function(){
+    console.log(this.value);
+    for(var t = 0; t < templates.length; t++){
+      if (templates[t][0] === this.value){
+        templateManager.Render(templates[t][1],'#display',null);
+      }
+    }
+  }
+  for(var i = 0; i < templates.length; i++){
+    var o = document.createElement('option');
+    o.innerText = templates[i][1]; // name
+    o.value = templates[i][0];
+    l.appendChild(o);
+    
+  }
+
+  document.body.prepend(l);
+  $(document).ready(function(){
+    l.onchange();
+  })
 }
