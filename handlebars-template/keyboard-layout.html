@@ -1,10 +1,6 @@
-<link href="styles/keyboard-style.css" rel="stylesheet" />
-<div class="keyboard-chooser">
-  <span>Select Keyboard:</span>
-  <a href="javascript:showKeyboard(0)">Normal</a>
-  <a href="javascript:showKeyboard(1)">Numeric</a>
-</div>
+<link href="/styles/keyboard-style.css" rel="stylesheet" />
 
+{{#if alpha}}
 <div class="keyboard-wrapper keyboard-normal">
   <div class="keyboard-row number-row">
     <button class="btn btn-key" data-key="1" data-alt="!">1</button>
@@ -61,7 +57,7 @@
     <button class="btn btn-key btn-action" data-key="bksp">Back</button>
   </div>
 </div>
-
+{{else}}
 <div class="keyboard-wrapper keyboard-numeric">
   <div class="keyboard-row number-row">
     <button class="btn btn-key" data-key="1">1</button>
@@ -84,7 +80,7 @@
     <button class="btn btn-key btn-action" data-key="bksp">Back</button>
   </div>
 </div>
-
+{{/if}}
 <script>
 
   (function kioskLoaded(){
@@ -92,16 +88,5 @@
       kiosk.startKeyboard('.keyboard-wrapper.keyboard-numeric');
       kiosk.startKeyboard('.keyboard-wrapper.keyboard-normal');
   })();
- 
-  function showKeyboard(type){
-    $('.keyboard-wrapper').hide();
-    switch(type){
-      case 1:
-        $('.keyboard-numeric').show();
-        break;
-      default:
-        $('.keyboard-normal').show();
-    }
-  }
 
 </script>

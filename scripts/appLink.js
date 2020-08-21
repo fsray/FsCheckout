@@ -6,8 +6,6 @@ var appLink = (function(fake){
     
     var transaction = [];
     
-    var logger = new voice();
-    
     function generateTestData(){
       itemRepository.push(new item("item1","title1",3.99,1));
       itemRepository.push(new item("item2","title2",6.99,1));
@@ -18,16 +16,24 @@ var appLink = (function(fake){
       customerRepository.push(new customer("Dan",10.00,0.00));
       customerRepository.push(new customer("Mark",0.00,7.00));
     }
+
+    function generateTestTransaction(){
+      for(var i = 0; i < itemRepository.length; i++){
+        addItemToTransaction(itemRepository[i]);
+      }
+    }
     
     generateTestData();
+    generateTestTransaction();
     
     function item(name, title, price, quantity){
       return {
-        Artist: name,
-        Title: title,
+        Title: name,
+        Description: title,
         PriceCurrent: price,
         PriceOriginal: null,
-        Quantity: quantity
+        Quantity: quantity,
+        ImageUrl: "/images/test-item.png"
       }
     }
     
@@ -73,8 +79,6 @@ var appLink = (function(fake){
       tax = subtotal * .00; // tax rate
       total = subtotal + tax;
       
-      logger.Speak('Transaction total: $' + total);
-      
       return new totals (total, tax, subtotal, 0);
     }
     
@@ -84,13 +88,14 @@ var appLink = (function(fake){
     }
     
     function addItemToTransaction(item){
-      logger.Speak(item.Artist + ' ' + item.Title + ' added to transaction.');
       transaction.push(item);
     }
     
     function getTransactionItems(){
       return transaction;
     }
+
+    
     
     return {
       FindItem: searchItem,

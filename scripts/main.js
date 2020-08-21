@@ -80,6 +80,8 @@ var templates = [
     ['handlebars-template/pin-pad.html','pin-pad'],
     ['handlebars-template/scan.html','scan'],
     ['handlebars-template/thank-you.html','thank-you'],
+    ['handlebars-template/scan-layout.html','scan2'],
+    ['handlebars-template/item-list.html','item-list'],
     
 ];
 
@@ -106,8 +108,12 @@ if (true){
     
   }
 
-document.body.insertBefore(l,document.body.firstChild);
+var w = document.getElementById('testing-bar');
+if (w != null){
+  w.insertBefore(l,w.firstChild);
+}
+
   $(document).ready(function(){
-    l.onchange();
+    templateManager.Render('scan2','#display');
   })
 }

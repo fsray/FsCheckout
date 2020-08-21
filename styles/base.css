@@ -1,4 +1,385 @@
-/* Scan */
+/* ---------------------------
+------------------------------
+-- FieldStack Self Checkout --
+------------------------------
+------------------------------ */
+/* ---- Testing Bar -----
+*/
+#testing-bar {
+  position: absolute;
+  width:100%;
+  background:#fcc7c7;
+  padding:5px;
+}
+
+/* --------------
+----- Reset ----- 
+---------------- */
+
+/* Box sizing rules */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Remove default padding */
+ul[class],
+ol[class] {
+  padding: 0;
+}
+
+/* Remove default margin */
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+ul[class],
+ol[class],
+li,
+figure,
+figcaption,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+/* -------------------------
+--- System/Global Styles ---
+------------------------- */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+h1 { font-size: 80px; }
+h2 { font-size: 64px; }
+h3 { font-size: 40px; }
+
+.flex-row {
+  display: flex;
+}
+
+.btn {
+  background-color: #4a90e2;
+  border-radius: 8px;
+  color: #fff;
+  display: inline-block;
+  font-size: 28px;
+  font-weight: bold;
+  padding: 30px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.product-blue {
+  background-color: #4A90E2;
+}
+
+.product-green {
+  background-color: #38BE2E;
+}
+
+.product-red {
+  background-color: #D0021B;
+}
+
+.footer {
+  background-color: #a03123;
+  color: #fff;
+  height: 125px;
+  display: flex;
+    align-items: center;
+    justify-content: space-between;
+  padding: 0 25px;
+}
+
+.footer .btn {
+  background-color: #fff;
+  color: #a03123;
+  min-height: 80px;
+  min-width: 238px;
+}
+
+.footer .user-text,
+.footer .right-btn span {
+  font-size: 40px;
+}
+
+
+
+
+/* -----------------
+------ Start ------- 
+------------------ */
+.start {
+  margin: 0 auto;
+  max-width: 910px;
+  padding-top: 60px;
+  text-align: center;
+  width: 100%;
+}
+
+.start-logo img {
+  display: block;
+  margin: 0 auto;
+  width: 220px;
+}
+
+.start h1 {
+  font-size: 80px;
+  font-weight: 400;
+  margin: 80px 0;
+}
+
+.start h2 {
+  font-size: 64px;
+  font-weight: 400;
+}
+
+.start h3 {
+  font-size: 40px;
+}
+
+.start p {
+  font-size: 40px;
+  margin: 30px 0;
+}
+
+.scan-icon {
+  display: block;
+  margin: 20px auto;
+  width: 200px;
+}
+
+.start .btn {
+  padding: 24px 30px;
+  width: 587px;
+}
+
+
+
+/* -----------------
+------- Scan ------- 
+------------------ */
+.content {
+  display: flex;
+  height: calc(100vh - 125px);
+}
+
+.left-col {
+  padding: 45px;
+  padding-right: 25px;
+  width: 50%
+}
+
+.items {
+
+}
+
+.items h1 {
+  font-size: 40px;
+  margin-bottom: 20px;
+}
+
+.item-container {
+  margin-bottom: 125px;
+  max-height: 430px;
+  overflow-y: scroll;
+}
+
+.item-row {
+  border-bottom: 1px solid #979797;
+  display: flex;
+    align-items: center;
+  font-size: 25px;
+  padding-right: 15px;
+}
+
+.item-img {
+  height: 85px;
+  width: 85px;
+  margin-right: 15px;
+}
+
+.item-img img {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.item-name {
+  width: 620px;
+  text-transform: uppercase;
+}
+
+.item-price {
+  text-align: right;
+  width: 150px;
+}
+
+.totals {
+  font-size: 30px;
+}
+
+.totals-row {
+}
+
+.subtotal {
+
+}
+
+.tax {
+
+}
+
+.grand-total {
+  font-weight: bold;
+}
+
 .right-col {
   background-color: #E6E4E4;
+  padding: 45px;
+  width: 50%;
+}
+
+.hf-logo img {
+  display: block;
+  margin: 0 auto;
+  width: 200px;
+}
+
+.right-col .flex-row {
+  justify-content: space-between;
+}
+
+.right-col .flex-row {
+  margin-top: 45px;
+}
+
+.enter-item .btn,
+.finish .btn {
+  width: 100%;
+}
+
+.reward-row .btn {
+  background: #fff;
+  color: #a03123
+}
+
+.finish {
+  
+}
+
+
+
+/* -----------------
+------- Help ------- 
+------------------ */
+.help {
+  background-color: #e6e4e4;
+  padding-top: 25px;
+}
+.help-icon img {
+  display: block;
+  margin: 200px auto 35px auto;
+  width: 285px;
+}
+
+.help h3 {
+  margin-bottom: 200px;
+  text-align: center;
+}
+
+.help .footer {
+  justify-content: flex-end;
+}
+
+.help .footer .btn {
+  background-color: #fff;
+  color: #a03123;
+  height: 80px;
+  width: 238px;
+  margin-top: 22px;
+  margin-right: 30px;
+}
+
+
+/* -------------------
+------ Pin Pad ------- 
+------------------- */
+.pin-pad {
+  padding-top: 25px;
+}
+
+.pin-pad h2 {
+  margin-top: 75px;
+  margin-bottom: 55px;
+  text-align: center;
+}
+
+.pin-pad-icon {
+  position: relative;
+  text-align: center;
+}
+
+.pin-pad-icon img {
+  display: inline-block;
+}
+
+.pin-img {
+  margin: 0 auto;
+  width: 321px;
+}
+.pin-arrow {
+  position: absolute;
+    top: 127px;
+  margin-left: 30px;
+  width: 217px;
+}
+
+
+/* ---------------------
+------ Thank You ------- 
+---------------------- */
+.thank-you {
+  padding-top: 25px;
+  text-align: center;
+}
+
+.thank-you h2 {
+  font-weight: normal;
+  margin-top: 130px;
+}
+
+.thank-you h3 {
+  font-weight: regular;
+  margin-top: 70px;
+}
+
+.thank-you .flex-row {
+  justify-content: center;
+  margin-top: 80px;
+}
+
+.thank-you .flex-row .btn {
+  font-size: 50px;
+  line-height: 200px;
+  margin: 0 15px;
+  padding: 0;
+  height: 200px;
+  width: 463px;
+}
+
+.thank-you .brand-white {
+  background-color: #fff;
+  border: 4px solid #a03123;
+  color: #a03123;
+}
+
+/* Client Styles */
+.brand-red {
+  background-color: #a03123;
 }
