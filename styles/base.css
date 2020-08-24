@@ -274,6 +274,65 @@ h3 { font-size: 40px; }
 }
 
 
+/* Enter Item Number */
+.enter-item-number h3 {
+  margin: 15px 0;
+  text-align: center;
+}
+
+.enter-item-number input {
+  border: 0;
+  display: block;
+  height: 80px;
+  margin: 15px auto 30px;
+  max-width: 753px;
+  width: 100%;
+}
+
+.key-pad-outer {
+  display: flex;
+  justify-content: space-around;
+  margin: 0 auto;
+  max-width: 753px;
+  width: 100%;
+}
+
+.enter-item-number .keyboard-numeric .btn-key {
+  border: 0;
+  font-size: 28px;
+  height: 100px;
+  margin-bottom: 7px;
+}
+
+.keyboard-numeric .btn-action {
+  background-color: #4a4a4a;
+}
+
+.action-key-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 190px;
+}
+
+.action-key-wrapper button {
+  border: 0;
+}
+
+.action-key-wrapper span {
+  font-weight: normal;
+}
+
+.cancel-btn {
+  background-color: #D0021B;
+}
+
+.ok-btn {
+  background-color: #38BE2E;
+  margin-bottom: 10px;
+}
+
+
 
 /* -----------------
 ------- Help ------- 

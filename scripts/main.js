@@ -82,6 +82,7 @@ var templates = [
     ['handlebars-template/thank-you.html','thank-you'],
     ['handlebars-template/scan-layout.html','scan2'],
     ['handlebars-template/item-list.html','item-list'],
+    ['handlebars-template/enter-item-number.html','item-number'],
     
 ];
 
