@@ -75,14 +75,10 @@ var templateManager = (function(){
 // list of template ['path','name']
 var templates = [
     ['handlebars-template/start.html','start'],
-    ['handlebars-template/keyboard-layout.html','keyboard'],
-    ['handlebars-template/help.html','help-page'],
-    ['handlebars-template/pin-pad.html','pin-pad'],
-    ['handlebars-template/scan.html','scan'],
-    ['handlebars-template/thank-you.html','thank-you'],
-    ['handlebars-template/scan-layout.html','scan2'],
-    ['handlebars-template/item-list.html','item-list'],
-    ['handlebars-template/enter-item-number.html','item-number'],
+    ['layouts/scan-layout.html','scan'],
+    ['layouts/_item-list.html','item-list'],
+    ['layouts/_keyboard-layout.html','keyboard'],
+    ['layouts/_keyboard-number.html','numeric']
     
 ];
 
