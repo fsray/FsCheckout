@@ -384,8 +384,16 @@ var kiosk = function () {
                 initKeyboard(selector);
                 initCursorTracking();
                 initScanListener();
+                mainFocus();
             }
         },
+        mainFocus = function(){
+            var j = document.getElementsByClassName('user-input');
+            for(var i = 0; i < j.length; i++){
+                onInputGainFocus(j[i]);
+                break;
+            }
+        }
         destroy = function(){
           
         };

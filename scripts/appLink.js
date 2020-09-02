@@ -3,8 +3,9 @@ var appLink = (function(fake){
   
     var itemRepository = [];
     var customerRepository = [];
-    
+
     var transaction = [];
+    var _customer = null;
     
     function generateTestData(){
       itemRepository.push(new item("item1","title1",3.99,1));
@@ -50,7 +51,8 @@ var appLink = (function(fake){
       return {
         Name: name,
         StoreCredit: credit,
-        LoyaltyPoints: points
+        LoyaltyPoints: points,
+        IsEmpty: credit == null && points == null && name == null
       }
     }
     
@@ -84,7 +86,18 @@ var appLink = (function(fake){
     
     /// returns a Customer object
     function getCustomer(code){
-      
+        if (code){
+           _customer = new customer('BOBBY DAVIS',12.00, 3);
+        }
+        else {
+          _customer = new customer(null, null, null);
+        }
+
+        return _customer;
+    }
+
+    function getCurrentCustomer(){
+        return _customer;
     }
     
     function addItemToTransaction(item){
@@ -102,7 +115,8 @@ var appLink = (function(fake){
       GetTotals: getTotals,
       FindCustomer: getCustomer,
       AddItemToTransaction: addItemToTransaction,
-      GetTransactionItems: getTransactionItems
+      GetTransactionItems: getTransactionItems,
+      CurrentCustomer: getCurrentCustomer
     }
     
   })();

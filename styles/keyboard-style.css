@@ -6,7 +6,7 @@
   .keyboard-row {
     margin-bottom:4px;
     display:flex;
-    justify-content:space-evenly;
+    justify-content:space-around;
   }
   .btn-key {
     padding: 10px 0px;

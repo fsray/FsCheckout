@@ -3,54 +3,24 @@
     <div class="items">
       <h1>Scan your items</h1>
       <div class="item-container"></div>
-    <div class="totals">
-      <div class="totals-row subtotal">
-        <span>Subtotal (4 items)</span>
-        <sapn>$46.52</span>
-      </div>
-      <div class="totals-row tax">
-        <span>Tax</span>
-        <sapn>$6.00</span>
-      </div>
-      <div class="totals-row grand-total">
-        <span>Total</span>
-        <sapn>$52.52</span>
-      </div>
-    </div>
+      <div class="totals"></div>
   </div>
 	</div>
 
     <div class="right-col">
       <div class="hf-logo"><img src="/images/hf-logo.png" alt="hollywood feed logo"></div>
       <div class="right-content">
-        <div class="spacer"></div>       
-
-        <div class="flex-row enter-item">
-          <a href="#" class="btn brand-red">Enter Item Number</a>
-        </div>
-        <div class="flex-row reward-row">
-          <a href="#" class="btn">Redeem a Giftcard</a>
-          <a href="#" class="btn">$30.52 Credit</a>
-          <a href="#" class="btn">Add a Coupon</a>
-        </div>
-        <div class="flex-row finish">
-          <a href="#" class="btn product-green">Finish and Pay</a>
-        </div>
+        
     </div>
   </div>
 </div>
 
 <div class="footer brand-red">
-  <span>
-    <a href="#">Help</a>
-  </span>
-  <span>Welcome back, User!</span>
-  <span>
-    Not you? <a href="#">Unlink Account</a>
-  </span>
+  <div class="left-btn">
+    <a class="btn" href="#">Help</a>
+  </div>
+  <div class="user-text">Welcome back, {{Name}}!</div>
+  <div class="right-btn">
+    <span>Not you?</span> <a class="btn" href="#">Unlink Account</a>
+  </div>
 </div>
-
-<script>
-  templateManager.Render('numeric','.right-content',{alpha:true});
-  templateManager.Render('item-list','.item-container',{item:appLink.GetTransactionItems()});
-</script>
