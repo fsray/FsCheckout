@@ -368,6 +368,11 @@ h3 { font-size: 40px; }
   background: #e6e4e4;
 }
 
+.store-mode .item-row.edit-item {
+  background-color: #4a90e2;
+  color: #fff;
+}
+
 .store-mode .footer {
   background: #fff;
   position: relative;
@@ -405,6 +410,9 @@ h3 { font-size: 40px; }
   width: 31%;
 }
 
+.store-mode-options a.btn.disabled {
+  color: #a8adae;
+}
 
 
 /* -----------------
