@@ -95,8 +95,10 @@ h3 { font-size: 40px; }
 }
 
 .user-entry input {
-  border: 0;
+  border: 1px solid #3a3a3a;
+  border-radius: 7px;
   display: block;
+  font-size: 32px;
   height: 80px;
   margin: 15px auto 30px;
   max-width: 753px;
@@ -112,13 +114,16 @@ h3 { font-size: 40px; }
 }
 
 .keyboard-numeric .btn-key {
-  border: 0;
+  background-color: #4285f4;
+  border: 1px solid #8a8a8a;
+  border-bottom: 2px solid #3a3a3a;
   font-size: 28px;
   height: 100px;
   margin-bottom: 7px;
 }
 
-.keyboard-numeric .btn-action {
+.keyboard-numeric .btn-action,
+.full-keyboard .keyboard-numeric .btn-action {
   background-color: #4a4a4a;
 }
 
@@ -157,8 +162,18 @@ h3 { font-size: 40px; }
 }
 
 .full-keyboard .btn-key {
+  background-color: #4285f4;
+  border: 1px solid #8a8a8a;
+  border-bottom: 2px solid #3a3a3a;
   margin:5px;
   width:95px;
+}
+
+.btn-key:focus,
+.btn-key:active {
+  background-color: #2a75f4;
+  border: 1px solid #000;
+  outline: none;
 }
 
 .full-keyboard .btn-action {

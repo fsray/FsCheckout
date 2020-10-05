@@ -74,15 +74,17 @@ var templateManager = (function(){
 
 // list of template ['path','name']
 var templates = [
-    ['layouts/start.html','start'],
-    ['layouts/scan-layout.html','scan'],
-    ['layouts/_keyboard-layout.html','keyboard'],
-    ['layouts/_keyboard-number.html','numeric'],
-    ['layouts/_full-width-pin.html','customerPhone'],
-    ['layouts/_item-list.html','itemList'],
-    ['layouts/_item-totals.html','itemTotal'],
-    ['layouts/_transaction-right.html','tran-right'],
-    ['layouts/_enter-item.html','enterItem']
+    ['/layouts/start.html','start'],
+    ['/layouts/scan-layout.html','scan'],
+    ['/layouts/_keyboard-layout.html','keyboard'],
+    ['/layouts/_keyboard-number.html','numeric'],
+    ['/layouts/_full-width-pin.html','customerPhone'],
+    ['/layouts/_item-list.html','itemList'],
+    ['/layouts/_item-totals.html','itemTotal'],
+    ['/layouts/_transaction-right.html','tran-right'],
+    ['/layouts/_enter-item.html','enterItem'],
+    ['/layouts/_customer-find-grid.html','customerSearchGrid'],
+    ['/layouts/search-overlay.html','searchOverlay']
     
 ];
 
