@@ -75,9 +75,10 @@ var kiosk = function () {
         },
         onInputGainFocus = function (ctrl) {
             console.log("gained focus: " + ctrl.name);
-
             if (ctrl) {
-                
+              if (ctrl.id === 'input-buffer'){
+                return;
+              }
                 // if we were already tracking an input control, stop tracking it
                 if (document.keyboardInput) {
                     clearCursorTracking(document.keyboardInput);
