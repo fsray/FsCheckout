@@ -1,0 +1,35 @@
+<div class="customer-entry-toggle">
+    <div class="entry-toggle btn-hollow" onclick="toggle()">Enter Phone #</div>
+</div>
+<div class="main-display">
+
+</div>
+<script>
+    var textMode = true;
+    // init
+    (function(){
+        toggle();
+    })();
+
+    function toggle(){
+        var m = new inputModel();
+        m.OnCancel = "app.startOver()";
+
+        console.log('TOGGLE');
+        textMode = !textMode;
+        if (textMode){
+            m.Caption = "Enter Frequent Feeder Email";
+            m.OnSubmit = "app.customerEmailLookup()";
+
+            templateManager.Render('fullText','.main-display', m);
+            document.getElementsByClassName('entry-toggle')[0].innerText = "Enter Phone #";
+        }
+        else {
+            m.Caption = "Enter Frequent Feeder Phone #";
+            m.OnSubmit = "app.customerPhoneLookup()";
+
+            templateManager.Render('fullNumeric','.main-display', m);
+            document.getElementsByClassName('entry-toggle')[0].innerText = "Enter Email";
+        }
+    }
+</script>

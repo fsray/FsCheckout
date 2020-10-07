@@ -1,13 +1,20 @@
-<div class="spacer"></div>       
+{{! tran-right -- uses CurrentCustomer as model}}
+<div class="right-flex">
+    <div class="flex-bottom-align">
+    <div class="spacer"></div>       
 
-<div class="flex-row enter-item">
-    <a href="#" class="btn brand-red" onclick="javascript:app.showEnterItem()">Enter Item Number</a>
-</div>
-<div class="flex-row reward-row">
-    <a href="#" class="btn">Redeem a Giftcard</a>
-    <a href="#" class="btn">${{StoreCredit}} Credit</a>
-    <a href="#" class="btn">Add a Coupon</a>
-</div>
-<div class="flex-row finish">
-    <a href="#" class="btn product-green">Finish and Pay</a>
+    <div class="flex-row enter-item">
+        <a href="javascript:app.action_EnterItem()" class="btn brand-red">Enter Item Number</a>
+    </div>
+    <div class="flex-row reward-row">
+        <a href="javascript:app.action_RedeemGiftCard()" class="btn">Redeem a Giftcard</a>
+        {{#unless IsEmpty}}
+        <a href="javascript:app.action_AddCredit()" class="btn">${{StoreCredit}} Credit</a>
+        {{/unless}}
+        <a href="javascript:app.action_AddCoupon()" class="btn">Add a Coupon</a>
+    </div>
+    <div class="flex-row finish">
+        <a href="javascript:app.action_FinishAndPay()" class="btn product-green btn-large">Finish and Pay</a>
+    </div>
+    </div>
 </div>

@@ -202,6 +202,9 @@ var kiosk = function () {
                         }
                         
                         var value = $(document.keyboardInput).val();
+                        if (typeof document.keyboardInput.valueChanged === 'function'){
+                            document.keyboardInput.valueChanged();
+                        }
                         
                             // handle backspace key pressed
                             // note: this does not handle cursor position at this time.

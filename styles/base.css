@@ -4,18 +4,12 @@
 ------------------------------
 ------------------------------ */
 
-/* ---- Testing Bar ----- */
-#testing-bar {
-  position: absolute;
-  width:100%;
-  background:#fcc7c7;
-  padding:5px;
-}
-
 /* --------------
 ----- Reset ----- 
 ---------------- */
-
+:root {
+  --colorPrimary:#74BF1D;
+}
 /* Box sizing rules */
 *,
 *::before,
@@ -90,7 +84,7 @@ h3 { font-size: 40px; }
 
 /* User Input */
 .user-entry h3 {
-  margin: 15px 0;
+  padding: 15px 0;
   text-align: center;
 }
 
@@ -181,15 +175,28 @@ h3 { font-size: 40px; }
     padding:0px;
 }
 
+/*Input Validation Error*/
+.user-input-wrap {
+  display:block;
+  text-align:center;
+}
+.user-input-wrap.validation {
+  color:red;
+  font-weight:bold;
+  font-size:110%;
+}
+
 /* ^^^^^^^^^^^^^^
    end user input  
 ^^^^^^^^^^^^^^^^^ */
-.full-width {
-  background-color: #e6e4e4;
+#display {
+  height:100%;
+  width:100%;
+  background-color:#e6e4e4;
 }
 
 .footer {
-  background-color: #a03123;
+  background-color:  var(--colorPrimary);;
   color: #fff;
   height: 125px;
   display: flex;
@@ -200,14 +207,21 @@ h3 { font-size: 40px; }
 
 .footer .btn {
   background-color: #fff;
-  color: #a03123;
-  min-height: 80px;
+  color:  var(--colorPrimary);;
   min-width: 238px;
+  height:20px;
+  line-height:20px;
+  border-radius:5px;
+  padding:25px;
+  box-sizing:content-box;
 }
 
 .footer .user-text,
 .footer .right-btn span {
-  font-size: 40px;
+  font-size: 35px;
+}
+.footer .right-btn > span {
+  margin-right: 10px;
 }
 
 
@@ -260,8 +274,25 @@ h3 { font-size: 40px; }
   padding: 24px 30px;
   width: 587px;
 }
-
-
+/* -----------------
+-- Customer Lookup -- 
+------------------ */
+.customer-entry-toggle {
+  position:absolute;
+}
+/* .customer-entry-toggle  */
+.btn-hollow {
+  border: 3px solid var(--colorPrimary);;
+  display: inline-block;
+  padding: 12px;
+  width: 200px;
+  font-size: 142%;
+  text-align: center;
+  border-radius: 4px;
+  margin: 15px;
+  cursor:pointer;
+  color: var(--colorPrimary)
+}
 
 /* -----------------
 ------- Scan ------- 
@@ -274,11 +305,18 @@ h3 { font-size: 40px; }
 .left-col {
   padding: 45px;
   padding-right: 25px;
-  width: 50%
+  width: 50%;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  background:#fff;
 }
 
-.items {
-
+.left-col .items {
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  height:100%;
 }
 
 .items h1 {
@@ -287,8 +325,6 @@ h3 { font-size: 40px; }
 }
 
 .item-container {
-  margin-bottom: 125px;
-  max-height: 430px;
   overflow-y: scroll;
 }
 
@@ -324,9 +360,21 @@ h3 { font-size: 40px; }
 
 .totals {
   font-size: 30px;
+  margin-top:auto;
 }
 
 .totals-row {
+  margin-top:12px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+span.divider {
+  border-top: 1px solid #cfcfcf;
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 15px;
 }
 
 .subtotal {
@@ -345,12 +393,19 @@ h3 { font-size: 40px; }
   background-color: #E6E4E4;
   padding: 45px;
   width: 50%;
+  display:flex;
+  flex-direction:column;
 }
 
 .hf-logo img {
   display: block;
   margin: 0 auto;
   width: 200px;
+}
+.right-flex {
+  display:flex;
+  height:100%;
+  align-items: flex-end;
 }
 
 .right-col .flex-row {
@@ -368,13 +423,46 @@ h3 { font-size: 40px; }
 
 .reward-row .btn {
   background: #fff;
-  color: #a03123
+  color:  var(--colorPrimary);;
+  flex-grow: 1;
+  margin: 10px;
+  min-width:300px;
 }
 
-.finish {
-  
+.right-content {
+  width:100%;
+  height:100%;
 }
 
+.btn-large {
+  padding:50px;
+}
+
+.flex-middle-align {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  width: 100%;
+  justify-content: center;
+}
+
+/* -----------------
+---- Gift Card -----
+------------------ */
+.gift-card-scan .caption {
+  font-size:200%;
+  font-weight:bold;
+  text-align:center;
+}
+.image-wrap .scan-icon {
+  width:55%;
+}
+
+.scan-done {
+  position:absolute;
+  top:55px;
+  right:30px;
+}
 
 /* -----------------
 ---- Store Mode ----
@@ -407,7 +495,7 @@ h3 { font-size: 40px; }
 }
 
 .store-mode .right-btn .btn {
-  border: 4px solid #A03123;
+  border: 4px solid  var(--colorPrimary);;
 }
 
 .store-mode-options {
@@ -436,6 +524,9 @@ h3 { font-size: 40px; }
 .help {
   background-color: #e6e4e4;
   padding-top: 25px;
+  display:flex;
+  height:100%;
+  flex-direction:column;
 }
 .help-icon img {
   display: block;
@@ -450,27 +541,21 @@ h3 { font-size: 40px; }
 
 .help .footer {
   justify-content: flex-end;
+  margin-top:auto;
 }
-
-.help .footer .btn {
-  background-color: #fff;
-  color: #a03123;
-  height: 80px;
-  width: 238px;
-  margin-top: 22px;
-  margin-right: 30px;
-}
-
 
 /* -------------------
 ------ Pin Pad ------- 
 ------------------- */
 .pin-pad {
   padding-top: 25px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 100%;
 }
 
 .pin-pad h2 {
-  margin-top: 75px;
   margin-bottom: 55px;
   text-align: center;
 }
@@ -493,6 +578,12 @@ h3 { font-size: 40px; }
     top: 127px;
   margin-left: 30px;
   width: 217px;
+}
+.pin-pad-content {
+  flex-direction: column;
+  height: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 
@@ -530,11 +621,19 @@ h3 { font-size: 40px; }
 
 .thank-you .brand-white {
   background-color: #fff;
-  border: 4px solid #a03123;
-  color: #a03123;
+  border: 4px solid var(--colorPrimary);
+  color:  var(--colorPrimary);
 }
 
 /* Client Styles */
 .brand-red {
-  background-color: #a03123;
+  background-color: var(--colorPrimary);
+}
+
+
+.dev {
+  position:absolute;
+  display:block;
+  top:0;
+  right:0;
 }

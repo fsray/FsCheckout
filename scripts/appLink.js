@@ -17,8 +17,9 @@ var appLink = (function(fake){
       customerRepository.push(new customer("Dan",10.00,0.00,"freddyDandle@hotmail.com","207-111-1988","5/1/18"));
       customerRepository.push(new customer("Mark",0.00,7.00,"orion_belter@aol.com","601-781-8888","1/1/2000"));
 
-      for(var i = 0; i < 10; i++){
+      for(var i = 0; i < 1; i++){
         customerRepository = customerRepository.concat(customerRepository);
+        itemRepository = itemRepository.concat(itemRepository);
       }
     }
 
@@ -92,9 +93,12 @@ var appLink = (function(fake){
     }
     
     /// returns a Customer object
-    function getCustomer(code){
-        if (code){
+    function getCustomer(phone, email){
+        if (phone){
            _customer = new customer('BOBBY DAVIS',12.00, 3);
+        }
+        else if (email){
+          _customer = new customer("Sammy Happano",0, 0);
         }
         else {
           _customer = new customer(null, null, null);

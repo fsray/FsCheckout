@@ -1,26 +1,25 @@
+{{! scan -- uses customer as model}}
 <div class="content">
   <div class="left-col">
     <div class="items">
       <h1>Scan your items</h1>
       <div class="item-container"></div>
-      <div class="totals"></div>
   </div>
+  <div class="totals"></div>
 	</div>
 
     <div class="right-col">
-      <div class="hf-logo"><img src="/images/hf-logo.png" alt="hollywood feed logo"></div>
-      <div class="right-content">
-        
-    </div>
+      <div class="hf-logo"><img src="/images/hf-logo.png" alt="logo"></div>
+      <div class="right-content"></div>
   </div>
 </div>
 
 <div class="footer brand-red">
   <div class="left-btn">
-    <a class="btn" href="#">Help</a>
+    <a class="btn" href="javascript:app.action_HelpShow()">Help</a>
   </div>
   <div class="user-text">Welcome back, {{Name}}!</div>
   <div class="right-btn">
-    <span>Not you?</span> <a class="btn" href="#">Unlink Account</a>
+    <span>Not you?</span> <a class="btn" href="javascript:app.action_UnlinkAccount()">Unlink Account</a>
   </div>
 </div>

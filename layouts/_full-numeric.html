@@ -1,6 +1,10 @@
+{{! customerPhone -- no model}}
+<div class="flex-middle-align">
 <div class="full-width user-entry">
-  <h3>Enter Frequent Feeder Phone Number</h3>
-    <input type="text" class="user-input" alt="Enter Item Number" title="Enter Item Number" aria-label="Enter Item Number">
+  <h3>{{Caption}}</h3>
+  <span class="user-input-wrap">
+    <input type="text" class="user-input" />
+    </span>
   <div class="key-pad-outer">
       <div class="keyboard-wrapper keyboard-numeric">
         <div class="keyboard-row number-row">
@@ -25,8 +29,14 @@
         </div>
       </div>
       <div class="action-key-wrapper">
-        <button class="btn cancel-btn" onclick="app.startTransaction()"><span>X</span><br>Cancel</button>
-        <button class="btn ok-btn" onclick="app.customerLookupPhone()"><span>O</span><br>OK</button>
+      <button class="btn cancel-btn" onclick="{{OnCancel}}"><span>X</span><br>Cancel</button>
+      <button class="btn ok-btn" onclick="{{OnSubmit}}"><span>O</span><br>OK</button>
       </div>
     </div>
 </div>
+</div>
+<script>
+  (function(){
+    kiosk.startKeyboard('.keyboard-wrapper');
+  })()
+  </script>

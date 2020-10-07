@@ -76,15 +76,21 @@ var templateManager = (function(){
 var templates = [
     ['/layouts/start.html','start'],
     ['/layouts/scan-layout.html','scan'],
-    ['/layouts/_keyboard-layout.html','keyboard'],
-    ['/layouts/_keyboard-number.html','numeric'],
-    ['/layouts/_full-width-pin.html','customerPhone'],
+    ['/layouts/_customer-set.html','customerEntry'],
+    ['/layouts/_full-numeric.html','fullNumeric'],
+    ['/layouts/_full-text.html','fullText'],
     ['/layouts/_item-list.html','itemList'],
     ['/layouts/_item-totals.html','itemTotal'],
     ['/layouts/_transaction-right.html','tran-right'],
-    ['/layouts/_enter-item.html','enterItem'],
-    ['/layouts/_customer-find-grid.html','customerSearchGrid'],
-    ['/layouts/search-overlay.html','searchOverlay']
+    ['/layouts/_numeric-small.html','numericPad'],
+    ['/layouts/help.html','helpScreen'],
+    ['/layouts/_gift-card-scan.html','giftCard'],
+    ['/layouts/pay-pinpad.html','finishAndPay'],
+    ['/layouts/transaction-complete.html','transactionComplete']
+    //['/layouts/_keyboard-layout.html','keyboard'],
+    //['/layouts/_keyboard-number.html','numeric'],
+    //['/layouts/_customer-find-grid.html','customerSearchGrid'],
+    //['/layouts/search-overlay.html','searchOverlay']
     
 ];
 
@@ -98,7 +104,8 @@ var app = (function(){
 
     if (false){
         function TEST(){
-            customerLookupPhone('555');
+            customerPhoneLookup('555');
+            actionTransactionComplete();
         }
     }
     function startOver(){
@@ -107,6 +114,11 @@ var app = (function(){
             return;
         }
         templateManager.Render("start","#display");
+    }
+
+
+    var appState = {
+        IsAdminMode: false
     }
 
     function startTransaction(customer){
@@ -129,9 +141,8 @@ var app = (function(){
         templateManager.Render("itemTotal",".totals",appLink.GetTotals());
     }
 
-    function enterPhone(){
-        templateManager.Render("customerPhone","#display");
-        kiosk.startKeyboard('.keyboard-wrapper');
+    function customerLookup(){
+        templateManager.Render("customerEntry","#display");
     }
 
     function focusInput(){
@@ -143,7 +154,7 @@ var app = (function(){
         }
     }
 
-    function customerLookupPhone(code){
+    function customerPhoneLookup(code){
         var val = code;
         if (document.keyboardInput){
             val = document.keyboardInput.value;
@@ -152,18 +163,29 @@ var app = (function(){
         var cust = appLink.FindCustomer(val);
         console.log(cust);
         if (cust.IsEmpty){
-            alert('customer not found. Try again!');
+            validation(document.keyboardInput,'Customer not found!');
+            //alert('customer not found. Try again!');
         }
         else {
             startTransaction(cust);
         }
-
     }
 
-    function showEnterItem(){
-        templateManager.Render('enterItem','.right-content');
-        kiosk.startKeyboard('.keyboard-wrapper');
+    function customerEmailLookup(code){
+        var val = code;
+        if (document.keyboardInput){
+            val = document.keyboardInput.value;
+        }
+
+        var cust = appLink.FindCustomer(null,val);
+        if (cust.IsEmpty){
+            validation(document.keyboardInput,'Customer not found!');
+        }
+        else {
+            startTransaction(cust);
+        }
     }
+
 
     function itemNumberFind(){
         var val = document.keyboardInput.value;
@@ -178,15 +200,121 @@ var app = (function(){
         }
     }
 
+    function getEnterItemModel(){
+        var ret = new inputModel();
+        ret.Caption = "Enter Item Number";
+        ret.OnCancel = "app.action_ResumeTransaction()";
+        ret.OnSubmit = "app.action_EnterItemSubmit()";
+        return ret;
+    }
+
+    function getAppState(){
+        return appState;
+    }
+
+    function validation(input,message){
+        var t = $(input).closest('.user-input-wrap');
+        t.addClass('validation');
+        t.prepend('<span class="validation-message">' + message + '</span>');
+        input.valueChanged = function(){
+            clearValidation(this);
+        };
+    }
+    function clearValidation(input){
+        var t = $(input).closest('.user-input-wrap');
+        t.removeClass('validation');
+        t.find('.validation-message').remove();
+        input.valueChanged = null;
+    }
+
+    function actionEnterItem(){
+        templateManager.Render('numericPad','.right-content',getEnterItemModel());
+    }
+    function actionEnterItemSubmit(){
+        alert('not implemented');
+    }
+    function actionRedeemGiftCard(){
+        var m = new inputModel();
+        m.Caption = "Scan your giftcard";
+        m.OnCancel = "app.action_ResumeTransaction()";
+
+        templateManager.Render('giftCard','.right-content', m);
+    }
+    function actionAddCoupon(){
+        var m = new inputModel();
+        m.Caption = "Enter Coupon Code";
+        m.OnSubmit = "app.actionAddCouponSubmit()",
+        m.OnCancel = "app.action_ResumeTransaction(true)";
+
+        templateManager.Render('fullText','#display',m);
+    }
+    function actionAddCouponSubmit(){
+
+    }
+    function actionFinishAndPay(){
+        templateManager.Render('finishAndPay','#display');
+    }
+    function actionUnlinkAccount(){
+        alert('not implemented');
+    }
+    function actionHelpShow(){
+        templateManager.Render('helpScreen','#display');
+    }
+    function actionHelpCancel(){
+        startTransaction(appLink.CurrentCustomer());
+    }
+    function actionAddCredit(){
+        alert('not implemented');
+    }
+    function actionTransactionComplete(){
+        var m = new inputModel();
+        m.OnSubmit = "app.action_PrintReceipt(true)";
+        m.OnCancel = "app.action_PrintReceipt(false)";
+        templateManager.Render('transactionComplete','#display',m);
+    }
+
+    function actionPrintReceipt(yes){
+        if (yes){
+            // appLink print receipt
+            alert('Printing Receipt... PLACEHOLDER!');
+            // callback for "OnDonePrinting"
+            startOver();
+            return;
+        }
+
+        startOver();
+    }
+
+    function resumeTransaction(fromFullScreen) {
+        if (fromFullScreen){
+            startTransaction(appLink.CurrentCustomer());
+        }
+        else {
+            resetTransactionRight();
+        }
+    }
+
     return {
-        startTransaction: startOver,
-        customerPhone: enterPhone,
-        customerLookupPhone: customerLookupPhone,
-        showEnterItem: showEnterItem,
-        exitEnterItem: resetTransactionRight,
-        enterItemNumber: itemNumberFind
+        startOver: startOver,
+        customerLookup: customerLookup,
+        action_EnterItem: actionEnterItem,
+        action_EnterItemSubmit: actionEnterItemSubmit,
+        action_RedeemGiftCard: actionRedeemGiftCard,
+        action_AddCoupon: actionAddCoupon,
+        action_AddCouponSubmit: actionAddCouponSubmit,
+        action_AddCredit: actionAddCredit,
+        action_ResumeTransaction: resumeTransaction,
+        action_FinishAndPay: actionFinishAndPay,
+        action_UnlinkAccount: actionUnlinkAccount,
+        action_HelpShow: actionHelpShow,
+        action_HelpCancel: actionHelpCancel,
+        action_TransactionComplete: actionTransactionComplete,
+        action_PrintReceipt: actionPrintReceipt,
+        customerPhoneLookup: customerPhoneLookup,
+        customerEmailLookup: customerEmailLookup,
+        
 
     }
 })();
 
-app.startTransaction();
+app.startOver();
