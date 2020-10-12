@@ -60,3 +60,22 @@ function itemModel()
         OnApply: null
     }
 }
+
+function adminActions(){
+    return {
+        CanPriceOverride: false,
+        CanDiscountPercent: false,
+        CanDiscountAmount: false,
+        CanChangeQuantity: false,
+        CanRemoveItem: false,
+        CanClearTransaction: false
+    }
+}
+
+function footerModel() {
+    return {
+        ContextMode: 0, // 0: no customer, 1: customer, 2: admin
+        ShowHelp: true,
+        CustomerMessage: null,
+    }
+}

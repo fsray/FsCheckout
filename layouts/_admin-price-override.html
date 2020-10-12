@@ -1,0 +1,18 @@
+{{! inputModel with Buttons[] of inputModels}}
+<div class="right-flex price-override">
+    <div class="flex-bottom-align">
+        <div class="spacer"></div>
+        <h3>{{Caption}}</h3>
+        <div class="flex-splitter">
+            <div class="override-options">
+                {{#each Buttons}}
+                <a href="javascript:{{OnSubmit}}" class="btn">{{Caption}}</a>
+                {{/each}}
+            </div>
+            <div class="action-key-wrapper">
+                <button class="btn cancel-btn" onclick="{{OnCancel}}"><span>X</span><br>Cancel</button>
+                <button class="btn ok-btn" onclick="{{OnSubmit}}"><span>O</span><br>OK</button>
+            </div>
+        </div>
+    </div>
+</div>

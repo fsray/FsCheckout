@@ -123,6 +123,9 @@ var appLink = (function(fake){
       return customerRepository;
     }
 
+    function customerRemove(){
+      _customer = null;
+    }
     
     
     return {
@@ -132,7 +135,8 @@ var appLink = (function(fake){
       AddItemToTransaction: addItemToTransaction,
       GetTransactionItems: getTransactionItems,
       CurrentCustomer: getCurrentCustomer,
-      GetCustomerSearch: demo_customerList
+      GetCustomerSearch: demo_customerList,
+      RemoveCustomer: customerRemove
     }
     
   })();

@@ -97,6 +97,7 @@ h3 { font-size: 40px; }
   margin: 15px auto 30px;
   max-width: 753px;
   width: 100%;
+  padding-left: 15px;
 }
 
 .key-pad-outer {
@@ -426,7 +427,7 @@ span.divider {
   color:  var(--colorPrimary);;
   flex-grow: 1;
   margin: 10px;
-  min-width:300px;
+  min-width:30%;
 }
 
 .right-content {
@@ -444,6 +445,10 @@ span.divider {
   align-items: center;
   width: 100%;
   justify-content: center;
+}
+
+.flex-bottom-align {
+  flex-grow:1;
 }
 
 /* -----------------
@@ -471,7 +476,7 @@ span.divider {
   background: #e6e4e4;
 }
 
-.store-mode .item-row.edit-item {
+.item-row.edit-item {
   background-color: #4a90e2;
   color: #fff;
 }
@@ -499,7 +504,15 @@ span.divider {
 }
 
 .store-mode-options {
+  display:flex;
   flex-wrap: wrap;
+  justify-content: space-between;
+  
+}
+
+.flex-splitter {
+  display:flex;
+  flex-direction:row;
 }
 
 .store-mode-options a.btn {
@@ -517,6 +530,36 @@ span.divider {
   color: #a8adae;
 }
 
+
+/* -- Price Override */
+.price-override .override-options {
+  display: flex;
+  flex-wrap: wrap;
+  flex-basis:45%;
+  flex-grow:1;
+  justify-content: flex-start;
+}
+
+.price-override .override-options .btn {
+  flex-basis:45%;
+  margin:10px;
+  background: #fff;
+  color: #4A90E2;
+  display: flex;
+  height: 200px;
+  flex-direction: column;
+  justify-content: center;
+  margin-bottom: 20px;
+  width: 31%;
+}
+
+.price-override .action-key-wrapper {
+  margin-right:10%;
+}
+.price-override h3 {
+  text-align: center;
+  margin: 35px;
+}
 
 /* -----------------
 ------- Help ------- 

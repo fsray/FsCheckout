@@ -40,8 +40,9 @@ var keyboard_buffer = (function(){
     }
 
     function keyboard_monitor(value){
-      if (value === "hello"){
-        alert('WORLD');
+      $('#background-buffer').html(value);
+      if (value === "admin"){
+        app.action_AdminModeEnter();
       }
     }
 

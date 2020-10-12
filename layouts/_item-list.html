@@ -1,6 +1,6 @@
 {{! itemList -- uses GetTransactionitems as model}}
 {{#each this}}
-<div class="item-row">
+<div class="item-row" onclick="app.SelectRow(this)">
           <div class="item-img"><img src="{{ImageUrl}}"></div>
           <div class="item-name">{{Title}} - {{Description}}</div>
           <div class="item-price">{{PriceCurrent}}</div>

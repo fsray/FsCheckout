@@ -1,103 +1,3 @@
-var templateManager = (function(){
-
-    var templateList = [];
-
-
-    function addTemplate(path,name){
-        var exists = findTemplate(path,name);
-
-        if (exists == null){
-            loadTemplate(path,name);
-        }
-    }
-
-    function getTemplateByName(name){
-        return findTemplate(null,name);
-    }
-    function findTemplate(path,name){
-        for(var i = 0; i < templateList.length; i++){
-            if (templateList[i].Path === path){
-                return templateList[i];
-            }
-            if (templateList[i].Name === name){
-                return templateList[i];
-            }
-        }
-    }
-
-    var loadTemplate = function(path,name){
-        var xhr = new XMLHttpRequest();
-        xhr.addEventListener('load',function(){
-            templateList.push(new template(path,this.responseText,name));
-        });
-        xhr.open("GET",path,false); // intentionall synchronous
-        xhr.send();
-
-    }
-
-    // template object
-    function template(path,source,name){
-        return {
-            Path:path,
-            Source:source,
-            Name:name,
-            Template:Handlebars.compile(source)
-        }
-    }
-
-    function renderTemplate(name,selector,data){
-        var t = getTemplateByName(name);
-        if (t != null && t.Template != null){
-            $(selector).html(t.Template(data));
-        }
-    }
-
-    // for c# Window.External override
-    if (typeof window.external.templateLoader !== "undefined" 
-    && window.location.protocol !== "http:"){
-        loadTemplate = function(path,name){
-            var r = window.external.templateLoader(path,name);
-            if (r != null){
-                templateList.push(new template(path,r,name));
-            }
-        }
-    }
-
-
-    return {
-        AddTemplate: addTemplate,
-        FindTemplate: findTemplate,
-        GetTemplate: getTemplateByName, // search by name
-        Render: renderTemplate // name, selector, json data
-    }
-})()
-
-// list of template ['path','name']
-var templates = [
-    ['/layouts/start.html','start'],
-    ['/layouts/scan-layout.html','scan'],
-    ['/layouts/_customer-set.html','customerEntry'],
-    ['/layouts/_full-numeric.html','fullNumeric'],
-    ['/layouts/_full-text.html','fullText'],
-    ['/layouts/_item-list.html','itemList'],
-    ['/layouts/_item-totals.html','itemTotal'],
-    ['/layouts/_transaction-right.html','tran-right'],
-    ['/layouts/_numeric-small.html','numericPad'],
-    ['/layouts/help.html','helpScreen'],
-    ['/layouts/_gift-card-scan.html','giftCard'],
-    ['/layouts/pay-pinpad.html','finishAndPay'],
-    ['/layouts/transaction-complete.html','transactionComplete']
-    //['/layouts/_keyboard-layout.html','keyboard'],
-    //['/layouts/_keyboard-number.html','numeric'],
-    //['/layouts/_customer-find-grid.html','customerSearchGrid'],
-    //['/layouts/search-overlay.html','searchOverlay']
-    
-];
-
-for(var i = 0; i < templates.length; i++){
-    templateManager.AddTemplate(templates[i][0],templates[i][1]);
-}
-
 ////// MAIN APP LOGIC ////////
 
 var app = (function(){
@@ -105,7 +5,8 @@ var app = (function(){
     if (false){
         function TEST(){
             customerPhoneLookup('555');
-            actionTransactionComplete();
+            adminModeEnter();
+            updateTransaction();
         }
     }
     function startOver(){
@@ -113,6 +14,8 @@ var app = (function(){
             TEST();
             return;
         }
+        console.log('start over');
+        
         templateManager.Render("start","#display");
     }
 
@@ -139,6 +42,7 @@ var app = (function(){
         // dependent on the Scan template
         templateManager.Render("itemList",".item-container",appLink.GetTransactionItems());
         templateManager.Render("itemTotal",".totals",appLink.GetTotals());
+        templateManager.Render('footer','.footer',getFooterModel())
     }
 
     function customerLookup(){
@@ -186,28 +90,6 @@ var app = (function(){
         }
     }
 
-
-    function itemNumberFind(){
-        var val = document.keyboardInput.value;
-        var item = appLink.FindItem(val);
-        if (item != null){
-            appLink.AddItemToTransaction(item);
-            resetTransactionRight();
-            updateTransaction();
-        }
-        else {
-            alert('item not found');
-        }
-    }
-
-    function getEnterItemModel(){
-        var ret = new inputModel();
-        ret.Caption = "Enter Item Number";
-        ret.OnCancel = "app.action_ResumeTransaction()";
-        ret.OnSubmit = "app.action_EnterItemSubmit()";
-        return ret;
-    }
-
     function getAppState(){
         return appState;
     }
@@ -228,7 +110,12 @@ var app = (function(){
     }
 
     function actionEnterItem(){
-        templateManager.Render('numericPad','.right-content',getEnterItemModel());
+        var m = new inputModel();
+        m.Caption = "Enter Item Number";
+        m.OnCancel = "app.action_ResumeTransaction()";
+        m.OnSubmit = "app.action_EnterItemSubmit()";
+
+        templateManager.Render('numericPad','.right-content',m);
     }
     function actionEnterItemSubmit(){
         alert('not implemented');
@@ -249,7 +136,9 @@ var app = (function(){
         templateManager.Render('fullText','#display',m);
     }
     function actionAddCouponSubmit(){
-
+        // todo: check if valid coupon,
+        // raise validation if not
+        // apply and refresh
     }
     function actionFinishAndPay(){
         templateManager.Render('finishAndPay','#display');
@@ -285,6 +174,11 @@ var app = (function(){
         startOver();
     }
 
+    function actionUnlinkAccount(){
+        appLink.RemoveCustomer();
+        resumeTransaction(true);
+    }
+
     function resumeTransaction(fromFullScreen) {
         if (fromFullScreen){
             startTransaction(appLink.CurrentCustomer());
@@ -294,8 +188,138 @@ var app = (function(){
         }
     }
 
+    function getFooterModel(){
+        var m = new footerModel();
+        var c = appLink.CurrentCustomer();
+        if (appState.IsAdminMode){
+            m.ContextMode = 2;
+            m.ShowHelp = false;
+        }
+        else if (c != null && !c.IsEmpty){
+            m.ContextMode = 1;
+            m.CustomerMessage = "Welcome back, " + c.Name + "!";
+        }
+        else {
+            m.ContextMode = 0;
+            m.CustomerMessage = "Have a Frequent Feeder Account?";
+        }
+
+        return m;
+    }
+
+    // ADMIN FUNCTIONS //
+    function adminModeEnter(){
+        // if we're on Start Screen, go to the "pre-transaction" version, else
+        if (false){
+            // appState.TransactionStarted?
+        }
+        else {
+            appState.IsAdminMode = true;
+            templateManager.Render('admin-panel','.right-content');
+            templateManager.Render('footer','.footer',getFooterModel());
+            adminActionsEnableRelevant(null);
+        }
+    }
+
+    function adminModeExit(){
+        appState.IsAdminMode = false;
+        resumeTransaction(true);
+    }
+
+    function actionPriceOverrideShow(){
+        var m = new inputModel();
+        m.Caption = "Reason for Price Override";
+        m.Buttons = [];
+        // these will probably be appLink driven
+        for(i = 0; i < 4; i++){
+            var b = new inputModel();
+            switch(i){
+                case 0:
+                    b.Caption = "Price Match";
+                    b.OnSubmit = "alert('PriceMatch')";
+                    break;
+                case 1:
+                    b.Caption = "Damaged";
+                    b.OnSubmit = "alert('Damaged');"
+                    break;
+                case 2:
+                    b.Caption = "Wrong Price Marked";
+                    b.OnSubmit = "alert('Wrong Price');"
+                    break;
+                case 3:
+                    b.Caption = "Approaching Expiration";
+                    b.OnSubmit = "alert('Expired!')";
+                    break;
+            }
+            m.Buttons.push(b);
+        }
+        console.log(m);
+        m.OnSubmit = "app.action_AdminModeEnter()";
+        m.OnCancel = "app.action_AdminModeEnter()";
+
+        templateManager.Render('admin-priceOverride','.right-content',m);
+
+    }
+
+    function adminRowSelect(el){
+        var isSelected = $(el).hasClass('edit-item');
+        clearSelectedRows();
+        adminActionsDisable();
+        if (appState.IsAdminMode && !isSelected){
+            $(el).addClass('edit-item');
+            appState.SelectedRow = el;
+            adminActionsEnableRelevant(el);
+        }
+        else {
+            adminActionsEnableRelevant(null);
+        }
+    }
+
+    function clearSelectedRows(){
+        appState.SelectedRow = null;
+
+        $('.item-row').removeClass('edit-item');
+    }
+
+    function adminActionsEnableRelevant(item){
+        // start by disabling all
+        var m = new adminActions();
+
+        adminActionsDisable();
+        if (appState.SelectedRow != null){
+            m.CanRemoveItem = true;
+        }
+        else {
+            m.CanClearTransaction = true;
+        }
+
+        if (m.CanPriceOverride){
+            $('.btn[data-option="price_override"]').removeClass('disabled');
+        }
+        if (m.CanDiscountPercent){
+            $('.btn[data-option="discount_percent"]').removeClass('disabled');
+        }
+        if (m.CanDiscountAmount){
+            $('.btn[data-option="discount_amount"]').removeClass('disabled');
+        }
+        if (m.CanChangeQuantity){
+            $('.btn[data-option="quantity_change"]').removeClass('disabled');
+        }
+        if (m.CanRemoveItem){
+            $('.btn[data-option="item_remove"]').removeClass('disabled');
+        }
+        if (m.CanClearTransaction){
+            $('.btn[data-option="transaction_clear"]').removeClass('disabled');
+        }
+    }
+
+    function adminActionsDisable(){
+        $('.store-mode-options .btn').addClass('disabled');
+    }
+
     return {
         startOver: startOver,
+        GetState: getAppState,
         customerLookup: customerLookup,
         action_EnterItem: actionEnterItem,
         action_EnterItemSubmit: actionEnterItemSubmit,
@@ -310,6 +334,10 @@ var app = (function(){
         action_HelpCancel: actionHelpCancel,
         action_TransactionComplete: actionTransactionComplete,
         action_PrintReceipt: actionPrintReceipt,
+        action_AdminModeEnter: adminModeEnter,
+        action_AdminModeExit: adminModeExit,
+        action_AdminPriceOverrideShow: actionPriceOverrideShow,
+        SelectRow: adminRowSelect,
         customerPhoneLookup: customerPhoneLookup,
         customerEmailLookup: customerEmailLookup,
         
