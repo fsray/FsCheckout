@@ -1,14 +1,14 @@
 
 {{#if ShowHelp}}
 <div class="left-btn">
-    <a class="btn" href="javascript:app.action_HelpShow()">Help</a>
+    <button class="btn" data-action="help_show">Help</button>
 </div>
 {{/if}}
 {{#if (eq ContextMode 0)}}
 {{! NO CUSTOMER MODE}}
 <div class="right-btn">
     <span>{{CustomerMessage}}</span> 
-    <a class="btn" href="javascript:app.customerLookup(true)">Enter Phone #</a>
+    <button class="btn" data-action="customer_lookup">Enter Phone #</button>
 </div>
 {{/if}}
 {{#if (eq ContextMode 1)}}
@@ -16,14 +16,14 @@
 <div class="user-text">{{CustomerMessage}}</div>
 <div class="right-btn">
     <span>Not you?</span> 
-    <a class="btn" href="javascript:app.action_UnlinkAccount()">Unlink Account</a>
+    <button class="btn" data-action="customer_unlink">Unlink Account</button>
 </div>
 {{/if}}
 {{#if (eq ContextMode 2)}}
 {{! ADMIN MODE}}
 
 <div class="right-btn">
-    <a class="btn" href="javascript:app.action_AdminModeExit()">Exit</a>
+    <button class="btn" data-action="admin_exit">Exit</button>
 </div>
 
 {{/if}}

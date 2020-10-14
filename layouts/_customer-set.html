@@ -13,20 +13,20 @@
 
     function toggle(){
         var m = new inputModel();
-        m.OnCancel = "app.startOver()";
+        m.OnCancel = new action("action_startOver",app.startOver);
 
         console.log('TOGGLE');
         textMode = !textMode;
         if (textMode){
             m.Caption = "Enter Frequent Feeder Email";
-            m.OnSubmit = "app.customerEmailLookup()";
+            m.OnSubmit = new action("action_emailLookup",app.customerEmailLookup);
 
             templateManager.Render('fullText','.main-display', m);
             document.getElementsByClassName('entry-toggle')[0].innerText = "Enter Phone #";
         }
         else {
             m.Caption = "Enter Frequent Feeder Phone #";
-            m.OnSubmit = "app.customerPhoneLookup()";
+            m.OnSubmit = new action("action_phoneLookup",app.customerPhoneLookup);
 
             templateManager.Render('fullNumeric','.main-display', m);
             document.getElementsByClassName('entry-toggle')[0].innerText = "Enter Email";

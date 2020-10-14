@@ -1,81 +1,78 @@
-function footerModel() {
-    return {
-        CustomerName: null,
-        IsStoreMode: false
-    }
-}
-
 function inputModel(){
-    return {
-        Caption: "",
-        OnCancel: null,
-        OnSubmit: null,
-        OnError: null
-    }
+    this.Caption = "";
+    this.OnCancel = null;
+    this.OnSubmit = null;
+    this.OnError = null;
 }
 
 function fullKeyboardModel(){
-    return {
-        Caption: "",
-        OnCancel: null,
-        OnSubmit: null,
-        OnError: null
-    }
+    this.Caption= "";
+    this.OnCancel= null;
+    this.OnSubmit= null;
+    this.OnError= null;
 }
 
 function itemTotalModel(){
-    return {
-        Total: 0,
-        Tax: 0,
-        Subtotal: 0,
-        Discount: 0
-    }
+    this.Total = 0;
+    this.Tax = 0;
+    this.Subtotal = 0;
+    this.Discount =0;
+    this.ItemCount = 0;
 }
 
 function customerModel(){
-    return {
-        Name: "",
-        StoreCredit: 0,
-        LoyaltyPoints: 0,
-        IsEmpty: credit == null && points == null && name == null,
-        Email: null,
-        Phone: null,
-        LastActive: null
-    }
+        this.Name= "";
+        this.StoreCredit= 0;
+        this.LoyaltyPoints= 0;
+        this.IsEmpty= credit == null && points == null && name == null;
+        this.Email= null;
+        this.Phone= null;
+        this.LastActive= null
 }
 
 function itemModel()
 {
-    return {
-        Title: null,
-        Description: null,
-        PriceCurrent: "$0.00",
-        PriceOriginal: null,
-        Quantity: 1,
-        ImageUrl: null,
-        CanRemove: false,
-        CanApply: false,
-        ApplyMessage: null,
-        OnRemove: null,
-        OnApply: null
-    }
+    this.Title = null;
+    this.Description = null;
+    this.ImageUrl = null;
+
+    this.PriceCurrent = "$0.00";
+    this.PriceOriginal= null;
+    this.IsOnSale = false;
+    this.IsCoupon = false;
+    this.Quantity = 1;
+    this.ImageUrl = null;
+    this.CanRemove = false;
+    this.CanApply = false;
+    this.ApplyMessage = null;
+    this.OnRemove = null;
+    this.OnApply = null;
 }
 
 function adminActions(){
-    return {
-        CanPriceOverride: false,
-        CanDiscountPercent: false,
-        CanDiscountAmount: false,
-        CanChangeQuantity: false,
-        CanRemoveItem: false,
-        CanClearTransaction: false
-    }
+    this.CanPriceOverride = false;
+    this.CanDiscountPercent = false;
+    this.CanDiscountAmount = false;
+    this.CanChangeQuantity = false;
+    this.CanRemoveItem = false;
+    this.CanClearTransaction = false
 }
 
 function footerModel() {
-    return {
-        ContextMode: 0, // 0: no customer, 1: customer, 2: admin
-        ShowHelp: true,
-        CustomerMessage: null,
-    }
+    this.ContextMode= 0; // 0: no customer, 1: customer, 2: admin
+    this.ShowHelp= true;
+    this.CustomerMessage= null;
+}
+
+function action(name,func){
+    return new dataAction(name,func);
+}
+
+function dataAction(name, func) {
+    this.ActionName = name;
+    this.Action = func;
+}
+
+dataAction.prototype.toString = function() {
+    return this.ActionName;
 }

@@ -4,17 +4,17 @@
     <div class="spacer"></div>       
 
     <div class="flex-row enter-item">
-        <a href="javascript:app.action_EnterItem()" class="btn brand-red">Enter Item Number</a>
+        <button data-action="action_enterItem" class="btn brand-red">Enter Item Number</button>
     </div>
     <div class="flex-row reward-row">
-        <a href="javascript:app.action_RedeemGiftCard()" class="btn">Redeem a Giftcard</a>
-        {{#unless IsEmpty}}
-        <a href="javascript:app.action_AddCredit()" class="btn">${{StoreCredit}} Credit</a>
-        {{/unless}}
-        <a href="javascript:app.action_AddCoupon()" class="btn">Add a Coupon</a>
+        <button data-action="action_redeemGiftCard" class="btn">Redeem a Giftcard</button>
+        {{#if (eq IsEmpty 0)}}
+        <button data-action="action_addCredit" class="btn">${{StoreCredit}} Credit</button>
+        {{/if}}
+        <button data-action="action_addCoupon" class="btn">Add a Coupon</button>
     </div>
     <div class="flex-row finish">
-        <a href="javascript:app.action_FinishAndPay()" class="btn product-green btn-large">Finish and Pay</a>
+        <button data-action="finish_pay" class="btn product-green btn-large">Finish and Pay</button>
     </div>
     </div>
 </div>

@@ -3,6 +3,7 @@ var appLink = (function(fake){
   
     var itemRepository = [];
     var customerRepository = [];
+    this.lineCount = 0;
 
     var transaction = [];
     var _customer = null;
@@ -33,14 +34,14 @@ var appLink = (function(fake){
     generateTestTransaction();
     
     function item(name, title, price, quantity){
-      return {
-        Title: name,
-        Description: title,
-        PriceCurrent: price,
-        PriceOriginal: null,
-        Quantity: quantity,
-        ImageUrl: "/images/test-item.png"
-      }
+      var item = new itemModel();
+      item.Title = name;
+      item.Description = title;
+      item.PriceCurrent = price;
+      item.Quantity = quantity;
+      item.ImageUrl = "/images/test-item.png";
+      
+      return item;
     }
     
     function totals(total, tax, subtotal, discount){
@@ -78,18 +79,19 @@ var appLink = (function(fake){
     
     /// returns a Totals object
     function getTotals(){
-      var subtotal = 0,
-          tax = 0,
-          total = 0;
+      var t = new itemTotalModel();
       
       for(var i = 0; i < transaction.length; i++){
-        subtotal += transaction[i].PriceCurrent;
+        console.log(transaction[i]);
+        t.Subtotal += transaction[i].PriceCurrent;
+        t.ItemCount = i;
       }
       
-      tax = subtotal * .00; // tax rate
-      total = subtotal + tax;
+      t.Tax = t.Subtotal * .00; // tax rate
+      t.Total = t.Subtotal + t.Tax;
       
-      return new totals (total, tax, subtotal, 0);
+      return t;
+      
     }
     
     /// returns a Customer object
@@ -108,11 +110,19 @@ var appLink = (function(fake){
     }
 
     function getCurrentCustomer(){
-        return _customer;
+        return _customer ?? new customer();
     }
     
     function addItemToTransaction(item){
-      transaction.push(item);
+      var i = new itemModel();
+      i.Title = item.Title;
+      i.Description = item.Description;
+      i.PriceCurrent = item.PriceCurrent;
+      i.Quantity = item.PriceCurrent;
+      i.ImageUrl = item.ImageUrl;
+      i.ItemId = lineCount++;
+
+      transaction.push(i);
     }
     
     function getTransactionItems(){
@@ -126,6 +136,28 @@ var appLink = (function(fake){
     function customerRemove(){
       _customer = null;
     }
+
+    function getAdminOptions(itemId){
+      var item = null;
+      for(var i = 0; i < transaction.length; i++){
+        if (transaction[i].ItemId === itemId)
+          item = transaction[i];
+          break;
+      }
+
+      var actions = new adminActions();
+      if (itemId == 1){
+        return actions; // just for testing...
+      }
+      actions.CanChangeQuantity = true;
+      actions.CanDiscountAmount = true;
+      actions.CanDiscountPercent = true;
+      actions.CanPriceOverride = true;
+      actions.CanRemoveItem = true;
+
+      return actions;
+
+    }
     
     
     return {
@@ -136,7 +168,8 @@ var appLink = (function(fake){
       GetTransactionItems: getTransactionItems,
       CurrentCustomer: getCurrentCustomer,
       GetCustomerSearch: demo_customerList,
-      RemoveCustomer: customerRemove
+      RemoveCustomer: customerRemove,
+      GetItemAdminOptions: getAdminOptions
     }
     
   })();

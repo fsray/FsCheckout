@@ -51,8 +51,42 @@ var templateManager = (function(){
     function renderTemplate(name,selector,data){
         var t = getTemplateByName(name);
         if (t != null && t.Template != null){
-            $(selector).html(t.Template(data));
+            var temp = t.Template(data);
+            $(selector).html(temp);
+            addListeners(selector,data);
         }
+    }
+
+    function addListeners(temp,data){
+        var all = $(temp).find('[data-action]');
+        var actions = parseActions(data);
+        for(var i = 0; i < all.length; i++){
+            var k = all[i].getAttribute('data-action');
+            for(var j = 0; j < actions.length; j++){
+                if (actions[j].ActionName === k){
+                    all[i].addEventListener('click',actions[j].Action);
+                }
+            }
+        }
+    }
+
+    function parseActions(data){
+        var actions = [];
+
+        function recurse(o,l){
+            for(var prop in o){
+                if (prop === 'ActionName'){
+                    l.push(o);
+                }
+                if (typeof o[prop] === 'object'){
+                    recurse(o[prop],l);
+                }
+            }
+        }
+
+        recurse(data,actions);
+        
+        return actions;
     }
 
     // for c# Window.External override
