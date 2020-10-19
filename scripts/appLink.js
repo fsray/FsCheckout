@@ -110,7 +110,7 @@ var appLink = (function(fake){
     }
 
     function getCurrentCustomer(){
-        return _customer ?? new customer();
+        return _customer == null ? new customer() : _customer;
     }
     
     function addItemToTransaction(item){

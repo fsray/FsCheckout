@@ -14,7 +14,10 @@ var keyboard_buffer = (function(){
     var k = document.createElement('input');
     k.id = 'input-buffer';
     k.type = "text";
-    k.style = "position:absolute; top:-1000px; left:-1000px";
+    k.hello = "world";
+    k.style.position = "absolute";
+    k.style.top = "-1000px";
+    k.style.left = "-1000px";
     k.addEventListener('keyup',handleBufferInput);
     k.addEventListener('blur',setBufferFocus);
 

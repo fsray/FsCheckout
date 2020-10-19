@@ -9,10 +9,21 @@
 	</head>
 	<body>
 		<div class="dev">
+			<button onclick="window.location.href = window.location.href">RELOAD</button>
 			<span id="background-buffer"></span>
 		</div>
-      <div id="display"></div>
+      <div id="display">
+		  LOADING
+	  </div>
 	</body>
+	<script>
+		(function(){
+			// bind to C# app
+			if (typeof CefSharp === 'object'){
+				CefSharp.BindObjectAsync('FieldStack');
+			}
+		})();
+	</script>
   	<script src="scripts/keyboard_buffer.js"></script>
 	<script src="scripts/plugin/jquery-3.5.1.min.js"></script>
 	<script src="scripts/plugin/handlebars-4.7.6.min.js"></script>
@@ -21,4 +32,14 @@
 	<script src="scripts/appLink.js"></script>
 	<script src="scripts/main.js"></script>
 	<script src="scripts/keyboard_module.js"></script>
+	<script>
+		var app = null;
+		// startup
+		templateManager.Init(templates).then(function(){
+			app = new application();
+			app.startOver();
+
+		});
+
+	</script>
 </html>

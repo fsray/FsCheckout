@@ -217,6 +217,15 @@ h3 { font-size: 40px; }
   box-sizing:content-box;
 }
 
+.footer .right-btn {
+  margin-left:auto;
+}
+.footer .user-text {
+  margin:auto;
+}
+.footer .left-btn {
+  margin-right:auto;
+}
 .footer .user-text,
 .footer .right-btn span {
   font-size: 35px;
@@ -351,6 +360,7 @@ h3 { font-size: 40px; }
   border-radius: 6px;
   color: red;
   background: #fff;
+  margin-left:auto;
 }
 .item-prompt {
   border: 4px solid #38d138;
@@ -361,11 +371,13 @@ h3 { font-size: 40px; }
   color: #38d138;
   text-align: center;
   background: #fff;
+  margin-left:auto;
 }
 
 .item-row .item-price-old {
   text-decoration: line-through;
   position: relative;
+  margin-left:40%;
 }
 
 
@@ -390,7 +402,8 @@ h3 { font-size: 40px; }
 
 .item-price {
   text-align: right;
-  margin-left:20px;
+  margin-left:10px;
+  flex-grow:1;
 }
 
 .totals {
@@ -467,6 +480,7 @@ span.divider {
 .right-content {
   width:100%;
   height:100%;
+  overflow:hidden;
 }
 
 .btn-large {
@@ -586,6 +600,7 @@ span.divider {
   justify-content: center;
   margin-bottom: 20px;
   width: 31%;
+  align-items:center;
 }
 
 .price-override .action-key-wrapper {
@@ -703,7 +718,7 @@ span.divider {
 }
 
 /* Client Styles */
-.brand-red {
+.brand-primary {
   background-color: var(--colorPrimary);
 }
 

@@ -1,16 +1,17 @@
 var templateManager = (function(){
     console.log('manager');
     var templateList = [];
+    var localeStrings = {};
 
     Handlebars.registerHelper('eq',function(prop, val){
         return prop == val;
     })
 
-    function addTemplate(path,name){
+    async function addTemplate(path,name){
         var exists = findTemplate(path,name);
 
         if (exists == null){
-            loadTemplate(path,name);
+            await loadTemplate(path,name);
         }
     }
 
@@ -28,14 +29,46 @@ var templateManager = (function(){
         }
     }
 
-    var loadTemplate = function(path,name){
-        var xhr = new XMLHttpRequest();
-        xhr.addEventListener('load',function(){
-            templateList.push(new template(path,this.responseText,name));
-        });
-        xhr.open("GET",path,false); // intentionall synchronous
-        xhr.send();
+    async function loadClientResources() {
+        return new Promise(function(resolve,reject){
+            var req = new XMLHttpRequest();
+            req.overrideMimeType = "application/json";
+            req.open('GET','/scripts/LocaleStrings.json',true);
+            req.onload = function(){
+                var response = req.response;
+                resolve(response);
+            };
+            req.onerror = function(){
+                reject({
+                    status:this.status,
+                    statusText: xhr.statusText
+                });
+            };
 
+            req.send();
+        })
+    }
+
+    async function templateLoader(path,name){
+        return new Promise(function(resolve,reject){
+            var xhr = new XMLHttpRequest();
+            xhr.addEventListener('load',function(){
+                resolve(this.responseText);
+                //templateList.push(new template(path,this.responseText,name));
+            });
+            xhr.open("GET",path,true); // intentionall synchronous
+            xhr.send();
+        })
+    }
+
+    var loadTemplate = async function(path,name){
+
+        await templateLoader(path,name).then(function(result){
+            if (result != null){
+                result = applyLocaleStrings(result,localeStrings);
+                templateList.push(new template(path,result,name));
+            }
+        })
     }
 
     // template object
@@ -90,22 +123,47 @@ var templateManager = (function(){
     }
 
     // for c# Window.External override
-    if (typeof window.external.templateLoader !== "undefined" 
-    && window.location.protocol !== "http:"){
-        loadTemplate = function(path,name){
-            var r = window.external.templateLoader(path,name);
-            if (r != null){
-                templateList.push(new template(path,r,name));
-            }
+    if (typeof FieldStack === 'object'){
+        templateLoader = async function(path,name){
+            return FieldStack.templateLoader(path,name);
+            // var r = await FieldStack.templateLoader(path,name);
+            //  if (r != null){
+			// 	 templateList.push(new template(path,r,name));
+            //  }
         }
     }
 
+    (async function(){
+        await loadClientResources().then(obj=>{
+            localeStrings = JSON.parse(obj);
+        });
+
+        console.log(localeStrings);
+    })();
+
+    function applyLocaleStrings(template,locales){
+        for(var prop in locales){
+            template = template.split('{' + prop + '}').join(locales[prop]);
+        }
+
+        return template;
+    }
+
+    async function loadTemplates(list){
+        return new Promise(async function(resolve,reject){
+            for(var i = 0; i < list.length; i++){
+                await addTemplate(templates[i][0],templates[i][1]);
+            }
+            resolve(true);
+        });
+    }
 
     return {
         AddTemplate: addTemplate,
         FindTemplate: findTemplate,
         GetTemplate: getTemplateByName, // search by name
-        Render: renderTemplate // name, selector, json data
+        Render: renderTemplate, // name, selector, json data
+        Init: loadTemplates // load all the templates!
     }
 })()
 
@@ -133,7 +191,3 @@ var templates = [
     //['/layouts/search-overlay.html','searchOverlay']
     
 ];
-
-for(var i = 0; i < templates.length; i++){
-    templateManager.AddTemplate(templates[i][0],templates[i][1]);
-}

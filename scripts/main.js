@@ -1,5 +1,5 @@
 ////// MAIN APP LOGIC ////////
-var app = (function(){
+var application = function(){
 
     if (false){
         function TEST(){
@@ -20,7 +20,7 @@ var app = (function(){
 
 
     var appState = {
-        IsAdminMode: true
+        IsAdminMode: false
     }
 
     function startTransaction(customer){
@@ -30,6 +30,12 @@ var app = (function(){
     }
 
     function resetTransactionRight(){
+
+        if (appState.IsAdminMode){
+            adminModeEnter();
+            return;
+        }
+
         var m = appLink.CurrentCustomer();
         m.actions = [
             action("action_enterItem",actionEnterItem),
@@ -87,7 +93,6 @@ var app = (function(){
         console.log(cust);
         if (cust.IsEmpty){
             validation(document.keyboardInput,'Customer not found!');
-            //alert('customer not found. Try again!');
         }
         else {
             startTransaction(cust);
@@ -137,7 +142,7 @@ var app = (function(){
         templateManager.Render('numericPad','.right-content',m);
     }
     function actionEnterItemSubmit(){
-        alert('not implemented');
+        TODO('not implemented');
     }
     function actionRedeemGiftCard(){
         var m = new inputModel();
@@ -156,11 +161,13 @@ var app = (function(){
 
         templateManager.Render('fullText','#display',m);
     }
+    
     function actionAddCouponSubmit(){
         // todo: check if valid coupon,
         // raise validation if not
         // apply and refresh
     }
+
     function actionFinishAndPay(){
         var m = new inputModel();
         m.OnSubmit = action("dev_pay",actionTransactionComplete);
@@ -168,7 +175,7 @@ var app = (function(){
         templateManager.Render('finishAndPay','#display',m);
     }
     function actionUnlinkAccount(){
-        alert('not implemented');
+        TODO('not implemented');
     }
     function actionHelpShow(){
         var m = new inputModel();
@@ -179,11 +186,10 @@ var app = (function(){
 
         templateManager.Render('helpScreen','#display',m);
     }
-    // function actionHelpCancel(){
-    //     startTransaction(appLink.CurrentCustomer());
-    // }
+
+    
     function actionAddCredit(){
-        alert('not implemented');
+        TODO('not implemented');
     }
     function actionTransactionComplete(){
         var m = new inputModel();
@@ -200,7 +206,7 @@ var app = (function(){
     function actionPrintReceipt(yes){
         if (yes){
             // appLink print receipt
-            alert('Printing Receipt... PLACEHOLDER!');
+            TODO('Printing Receipt... PLACEHOLDER!');
             // callback for "OnDonePrinting"
             startOver();
             return;
@@ -229,6 +235,7 @@ var app = (function(){
         if (appState.IsAdminMode){
             m.ContextMode = 2;
             m.ShowHelp = false;
+            m.CustomerMessage = "Store Mode";
             m.actions = [
                 action("admin_exit",adminModeExit)
             ]
@@ -260,8 +267,20 @@ var app = (function(){
             // appState.TransactionStarted?
         }
         else {
+            $(document.body).addClass('store-mode');
             appState.IsAdminMode = true;
-            templateManager.Render('admin-panel','.right-content');
+            var m = new inputModel();
+            m.actions = [
+                action("admin_enterItem",actionEnterItem),
+                action("price_override",actionPriceOverrideShow),
+                // action("discount_percent",adminDiscountPercent),
+                // action("discount_amount",adminDiscountAmount),
+                // action("quantity_change",adminQuantityChange),
+                // action("item_remove",adminItemRemove),
+                // action("transaction_clear",adminTransactionClear)
+            ];
+
+            templateManager.Render('admin-panel','.right-content',m);
             templateManager.Render('footer','.footer',getFooterModel());
             adminActionsEnableRelevant(null);
         }
@@ -269,7 +288,16 @@ var app = (function(){
 
     function adminModeExit(){
         appState.IsAdminMode = false;
+        $(document.body).removeClass('store-mode');
         resumeTransaction(true);
+    }
+
+    function adminDiscountPercent(){
+
+    }
+
+    function adminDiscountPercentSubmit(){
+        
     }
 
     function actionPriceOverrideShow(){
@@ -282,29 +310,33 @@ var app = (function(){
             switch(i){
                 case 0:
                     b.Caption = "Price Match";
-                    b.OnSubmit = "alert('PriceMatch')";
+                    b.OnSubmit = action("admin_pricematch",function(){TODO('price match')});
                     break;
                 case 1:
                     b.Caption = "Damaged";
-                    b.OnSubmit = "alert('Damaged');"
+                    b.OnSubmit = action("admin_pricematch",function(){TODO('Damaged')});
                     break;
                 case 2:
                     b.Caption = "Wrong Price Marked";
-                    b.OnSubmit = "alert('Wrong Price');"
+                    b.OnSubmit = action("admin_pricematch",function(){TODO('Wrong Price Marked')});
                     break;
                 case 3:
                     b.Caption = "Approaching Expiration";
-                    b.OnSubmit = "alert('Expired!')";
+                    b.OnSubmit = action("admin_pricematch",function(){TODO('Approaching Expiration')});
                     break;
             }
             m.Buttons.push(b);
         }
         console.log(m);
-        m.OnSubmit = action("action_AdminModeEnter", adminModeEnter);
-        m.OnCancel = action("action_AdminModeEnter",adminModeEnter);
+        m.OnSubmit = action("action_AdminModeEnter", resumeTransaction);
+        m.OnCancel = action("action_AdminModeEnter", resumeTransaction);
 
         templateManager.Render('admin-priceOverride','.right-content',m);
 
+    }
+
+    function TODO(name){
+        alert(name);
     }
 
     function adminRowSelect(el){
@@ -352,8 +384,6 @@ var app = (function(){
             m.CanClearTransaction = true;
         }
 
-
-
         if (m.CanPriceOverride){
             $('.btn[data-action="price_override"]').removeClass('disabled');
         }
@@ -384,28 +414,10 @@ var app = (function(){
         customerLookup: customerLookup,
         customerPhoneLookup: customerPhoneLookup,
         customerEmailLookup: customerEmailLookup,
-
-        //action_EnterItem: actionEnterItem,
-        //action_EnterItemSubmit: actionEnterItemSubmit,
-        //action_RedeemGiftCard: actionRedeemGiftCard,
-        //action_AddCoupon: actionAddCoupon,
-        //action_AddCouponSubmit: actionAddCouponSubmit,
-        //action_AddCredit: actionAddCredit,
-        //action_ResumeTransaction: resumeTransaction,
-        //action_FinishAndPay: actionFinishAndPay,
-        //action_UnlinkAccount: actionUnlinkAccount,
         action_HelpShow: actionHelpShow,
-        //action_HelpCancel: actionHelpCancel,
         action_TransactionComplete: actionTransactionComplete,
-        //action_PrintReceipt: actionPrintReceipt,
         action_AdminModeEnter: adminModeEnter,
-        action_AdminModeExit: adminModeExit,
-        //action_AdminPriceOverrideShow: actionPriceOverrideShow,
-        //SelectRow: adminRowSelect,
-        
-        
-
+        action_AdminModeExit: adminModeExit
     }
-})();
+}
 
-app.startOver();
