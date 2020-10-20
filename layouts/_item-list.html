@@ -1,23 +1,20 @@
 {{! itemList -- uses GetTransactionitems as model}}
 {{#each this}}
 <div class="item-row" >
-  <a href="javascript:void(0)" data-action="row_select" data-itemId={{ItemId}}>
+  <a href="javascript:void(0)" data-action="row_select" data-item-id={{ItemId}}>
           <div class="item-img" ><img src="{{ImageUrl}}"></div>
           <div class="item-name" >{{Title}} - {{Description}}</div>
           {{#if (eq ItemId 1)}}
           <div class="item-price-old">3.44</div>
           <div class="item-price" >{{PriceCurrent}}</div>
-          {{/if}}
-          {{#if (eq ItemId 2)}}
+          {{else if (eq ItemId 2)}}
           <div class="item-remove" data-action="item_remove">Remove</div>
-          {{/if}}
-          {{#if (eq ItemId 3)}}
+          {{else if (eq ItemId 3)}}
           <div class="item-prompt" data-action="item_prompt">Up to 30% off</div>
           <div class="item-price">{{PriceCurrent}}</div>
-          {{/if}}
-          {{#if (eq ItemId 4)}}
+          {{else}}
           <div class="item-price" >{{PriceCurrent}}</div>
-          {{/if}}  
+          {{/if}}
   </a>
 </div>
 {{/each}}

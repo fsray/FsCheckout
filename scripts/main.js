@@ -36,7 +36,7 @@ var application = function(){
             return;
         }
 
-        var m = appLink.CurrentCustomer();
+        var m = appLink.GetCurrentCustomer();
         m.actions = [
             action("action_enterItem",actionEnterItem),
             action("action_redeemGiftCard",actionRedeemGiftCard),
@@ -58,11 +58,22 @@ var application = function(){
         items.actions = [
             action("row_select",adminRowSelect),
             action("item_remove",function(){
-
+                event.cancelBubble = true;
+                var item = event.target;
+                if (item != null){
+                    var id = item.getAttribute('data-item-id');
+                    appLink.RemoveItemFromTransaction(id);
+                }
+                updateTransaction();
             }),
             action("item_prompt",function(){
                 event.cancelBubble = true;
-                console.log('prompt',event);
+                var item = event.target;
+                if (item != null){
+                    var id = item.getAttribute('data-item-id');
+                    appLink.ApplyLoyaltyProgram(id);
+                }
+                updateTransaction();
             })
         ]
         templateManager.Render("itemList",".item-container",items);
@@ -74,23 +85,13 @@ var application = function(){
         templateManager.Render("customerEntry","#display");
     }
 
-    function focusInput(){
-        var d = document.querySelectorAll('input[type="text"]');
-        for(var i = 0; i < d.length; i++){
-            console.log(d[i]);
-            d[i].focus();
-            break;
-        }
-    }
-
     function customerPhoneLookup(code){
         var val = code;
         if (document.keyboardInput){
             val = document.keyboardInput.value;
         }
 
-        var cust = appLink.FindCustomer(val);
-        console.log(cust);
+        var cust = appLink.AddCustomerToTransaction_Phone(val);
         if (cust.IsEmpty){
             validation(document.keyboardInput,'Customer not found!');
         }
@@ -105,7 +106,7 @@ var application = function(){
             val = document.keyboardInput.value;
         }
 
-        var cust = appLink.FindCustomer(null,val);
+        var cust = appLink.AddCustomerToTransaction_Email(val);
         if (cust.IsEmpty){
             validation(document.keyboardInput,'Customer not found!');
         }
@@ -142,7 +143,24 @@ var application = function(){
         templateManager.Render('numericPad','.right-content',m);
     }
     function actionEnterItemSubmit(){
-        TODO('not implemented');
+        var input = null;
+        if (document.keyboardInput){
+            input = document.keyboardInput.value;
+        }
+        if (input == null){
+            resumeTransaction();
+        }
+
+        var added = appLink.AddItemToTransaction(input);
+        console.log(added);
+        if (added === null){
+            validation(document.keyboardInput, 'Item not found');
+            kiosk.clearKeyboard();
+            return;
+        }
+        updateTransaction();
+        resumeTransaction();
+
     }
     function actionRedeemGiftCard(){
         var m = new inputModel();
@@ -161,7 +179,7 @@ var application = function(){
 
         templateManager.Render('fullText','#display',m);
     }
-    
+
     function actionAddCouponSubmit(){
         // todo: check if valid coupon,
         // raise validation if not
@@ -175,13 +193,14 @@ var application = function(){
         templateManager.Render('finishAndPay','#display',m);
     }
     function actionUnlinkAccount(){
-        TODO('not implemented');
+        appLink.TranasctionUnlinkCustomer();
+        resumeTransaction();
     }
     function actionHelpShow(){
         var m = new inputModel();
 
         m.OnCancel = action("action_helpCancel",function(){
-            startTransaction(appLink.CurrentCustomer());
+            startTransaction(appLink.GetCurrentCustomer());
         });
 
         templateManager.Render('helpScreen','#display',m);
@@ -216,22 +235,24 @@ var application = function(){
     }
 
     function actionUnlinkAccount(){
-        appLink.RemoveCustomer();
+        appLink.TranasctionUnlinkCustomer();
         resumeTransaction(true);
     }
 
     function resumeTransaction(fromFullScreen) {
         if (fromFullScreen){
-            startTransaction(appLink.CurrentCustomer());
+            startTransaction(appLink.GetCurrentCustomer());
         }
         else {
             resetTransactionRight();
         }
+
+        clearSelectedRows();
     }
 
     function getFooterModel(){
         var m = new footerModel();
-        var c = appLink.CurrentCustomer();
+        var c = appLink.GetCurrentCustomer();
         if (appState.IsAdminMode){
             m.ContextMode = 2;
             m.ShowHelp = false;
@@ -273,7 +294,7 @@ var application = function(){
             m.actions = [
                 action("admin_enterItem",actionEnterItem),
                 action("price_override",actionPriceOverrideShow),
-                // action("discount_percent",adminDiscountPercent),
+                 action("discount_percent",adminDiscountPercent),
                 // action("discount_amount",adminDiscountAmount),
                 // action("quantity_change",adminQuantityChange),
                 // action("item_remove",adminItemRemove),
@@ -293,7 +314,7 @@ var application = function(){
     }
 
     function adminDiscountPercent(){
-
+        
     }
 
     function adminDiscountPercentSubmit(){
@@ -301,38 +322,70 @@ var application = function(){
     }
 
     function actionPriceOverrideShow(){
+        if (appState.SelectedRow == null){
+            return;
+        }
+
+        appState.AdminRequest = new adminRequest();
+        appState.AdminRequest.RequestType = requestTypeList.PriceOverride;
+        appState.AdminRequest.RequestItem = appState.SelectedRow;
+
+
+        var m = new inputModel();
+        m.Caption = "Enter Price for Override";
+        m.OnSubmit = action("action_OverrideReasonSelect",function(){
+            if (document.keyboardInput){
+                var input = document.keyboardInput.value;
+                if (input > ''){
+                    appState.AdminRequest.RequestAmount = input;
+                    actionPriceOverrideReasonList();
+                }
+                else {
+                    validation(document.keyboardInput, 'Amount is invalid');
+                }
+            }
+        });
+        m.OnCancel = action("action_OverrideCancel",resumeTransaction);
+
+        templateManager.Render('numericPad','.right-content',m);
+    }
+
+    function actionPriceOverrideReasonList(){
+
+        var reasons = appLink.GetPriceOverrideReasonList();
+        
+        // if we don't need a reason, just submit the request.
+        if (!appLink.Settings_RequiresPriceOverrideReason
+            || reasons == null 
+            || reasons.length == 0){
+            
+            appLink.ApplyPriceOverride(appState.AdminRequest);
+            resumeTransaction();
+            return;
+        }
+
         var m = new inputModel();
         m.Caption = "Reason for Price Override";
         m.Buttons = [];
-        // these will probably be appLink driven
-        for(i = 0; i < 4; i++){
+
+        for(let i = 0; i < reasons.length; i++){
             var b = new inputModel();
-            switch(i){
-                case 0:
-                    b.Caption = "Price Match";
-                    b.OnSubmit = action("admin_pricematch",function(){TODO('price match')});
-                    break;
-                case 1:
-                    b.Caption = "Damaged";
-                    b.OnSubmit = action("admin_pricematch",function(){TODO('Damaged')});
-                    break;
-                case 2:
-                    b.Caption = "Wrong Price Marked";
-                    b.OnSubmit = action("admin_pricematch",function(){TODO('Wrong Price Marked')});
-                    break;
-                case 3:
-                    b.Caption = "Approaching Expiration";
-                    b.OnSubmit = action("admin_pricematch",function(){TODO('Approaching Expiration')});
-                    break;
-            }
+            b.Caption = reasons[i].Caption;
+            
+            b.OnSubmit = action("reason_" + reasons[i].ReasonId, function(){
+                appState.AdminRequest.RequestId = reasons[i].ReasonId;
+                appLink.ApplyPriceOverride(appState.AdminRequest);
+                resumeTransaction();
+            });
+
             m.Buttons.push(b);
         }
+
         console.log(m);
         m.OnSubmit = action("action_AdminModeEnter", resumeTransaction);
         m.OnCancel = action("action_AdminModeEnter", resumeTransaction);
 
         templateManager.Render('admin-priceOverride','.right-content',m);
-
     }
 
     function TODO(name){
@@ -371,8 +424,8 @@ var application = function(){
         var m = new adminActions();
         
         if (item != null){
-            var id = item.getAttribute('data-itemid');
-            m = appLink.GetItemAdminOptions(id);
+            var id = item.getAttribute('data-item-id');
+            m = appLink.GetAdminActionsForItem(id);
         }
 
         adminActionsDisable();

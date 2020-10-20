@@ -225,8 +225,7 @@ var kiosk = function () {
                             }
 
                             if (keyData === 'clr'){
-                                $(document.keyboardInput).val('');
-                                document.keyboardInput.setSelectionRange(0,0);
+                                kiosk.clearKeyboard();
                                 return;
                             }
 
@@ -397,7 +396,12 @@ var kiosk = function () {
                 onInputGainFocus(j[i]);
                 break;
             }
-        }
+        },
+        clearInput = function(){
+            $(document.keyboardInput).val('');
+            document.keyboardInput.setSelectionRange(0,0);
+            return;
+        },
         destroy = function(){
           
         };
@@ -407,7 +411,8 @@ var kiosk = function () {
         navigateBack: navigateBack,
         hideEmptyInventory: hideEmptyInventory,
         showKeyboard: showKeyboard,
-        startKeyboard: init
+        startKeyboard: init,
+        clearKeyboard: clearInput
     };
 }
 
