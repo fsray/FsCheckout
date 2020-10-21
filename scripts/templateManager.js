@@ -82,12 +82,15 @@ var templateManager = (function(){
     }
 
     function renderTemplate(name,selector,data){
-        var t = getTemplateByName(name);
-        if (t != null && t.Template != null){
-            var temp = t.Template(data);
-            $(selector).html(temp);
-            addListeners(selector,data);
-        }
+        return new Promise((resolve,error)=>{
+            var t = getTemplateByName(name);
+            if (t != null && t.Template != null){
+                var temp = t.Template(data);
+                $(selector).html(temp);
+                addListeners(selector,data);
+            }
+            resolve(true);
+        });
     }
 
     function addListeners(temp,data){

@@ -407,6 +407,11 @@ h3 { font-size: 40px; }
   flex-grow:1;
 }
 
+span.item-quantity {
+  text-transform: lowercase;
+  font-size: 90%;
+}
+
 .totals {
   font-size: 30px;
   margin-top:auto;
@@ -756,4 +761,14 @@ span.user-input-wrap.percent:before {
 
 decimal-field {
   display:none;
+}
+
+.override-options .btn.option-selected {
+  border: 5px solid #4A90E2;
+}
+
+.price-override .ok-btn[disabled] {
+  background:#cedbcc;
+  color:#888;
+  border:1px solid #696969;
 }

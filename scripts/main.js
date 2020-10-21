@@ -80,6 +80,7 @@ var application = function(){
         templateManager.Render("itemList",".item-container",items);
         templateManager.Render("itemTotal",".totals",appLink.GetTotals());
         templateManager.Render('footer','.footer',getFooterModel())
+        
     }
 
     function customerLookup(){
@@ -310,10 +311,10 @@ var application = function(){
                 action("admin_enterItem",actionEnterItem),
                 action("price_override",actionPriceOverrideShow),
                  action("discount_percent",adminDiscountPercent),
-                // action("discount_amount",adminDiscountAmount),
-                // action("quantity_change",adminQuantityChange),
-                // action("item_remove",adminItemRemove),
-                // action("transaction_clear",adminTransactionClear)
+                 action("discount_amount",adminDiscountAmount),
+                 action("quantity_change",adminQuantityChange),
+                 action("item_remove",adminItemRemove),
+                 action("transaction_clear",adminTransactionClear)
             ];
 
             templateManager.Render('admin-panel','.right-content',m);
@@ -328,12 +329,69 @@ var application = function(){
         resumeTransaction(true);
     }
 
-    function adminDiscountPercent(){
-        if (appState.SelectedRow == null){
+    function adminDiscountAmount() {
+        var submit = action("action_DiscountDollar",function(){
+            var i = helper_inputValue();
+            if (i > ''){
+                appState.AdminRequest.RequestAmount = i;
+                var result = appLink.ApplyDiscountDollar(appState.AdminRequest);
+                resumeTransaction();
+            }
+            else {
+                validation(document.keyboardInput,'Enter an Amount to discount');
+            }
+        })
+
+        getAdminRequest(requestTypeList.DiscountAmount, submit);
+    }
+
+    function adminQuantityChange() {
+        var submit = action("action_ChangeQuantity",function(){
+            var i = helper_inputValue();
+            if (i > ''){
+                appState.AdminRequest.RequestAmount = i;
+                var result = appLink.ChangeQuantity(appState.AdminRequest);
+                resumeTransaction();
+            }
+            else {
+                validation(document.keyboardInput,'Enter a Quantity');
+            }
+        })
+
+        getAdminRequest(requestTypeList.ChangeQuantity, submit);
+    }
+
+    function adminItemRemove() {
+        if (appState.SelectedRow == null || appState.SelectedId == null){
             return;
         }
 
-        appState.AdminRequest = new adminRequest();
+        appLink.RemoveItemFromTransaction(appState.SelectedId);
+
+        resumeTransaction();
+    }
+
+    function adminTransactionClear() {
+        appLink.TransactionClearItems();
+        resumeTransaction();
+    }
+
+
+
+    function adminDiscountPercent(){
+        var submit = action("action_DiscountPercentage",function(){
+            var i = helper_inputValue();
+            if (i > ''){
+                appState.AdminRequest.RequestAmount = i;
+                var result = appLink.ApplyDiscountPercent(appState.AdminRequest);
+                resumeTransaction();
+            }
+            else {
+                validation(document.keyboardInput,'Enter a percentage to discount');
+            }
+        })
+
+        getAdminRequest(requestTypeList.DiscountPercent, submit);
 
     }
 
@@ -423,6 +481,9 @@ var application = function(){
             
             b.OnSubmit = action("reason_" + reasons[i].ReasonId, function(){
                 appState.AdminRequest.RequestId = reasons[i].ReasonId;
+                $('.override-options .btn').removeClass('option-selected');
+                $(this).addClass('option-selected');
+                $('.price-override .ok-btn').removeAttr('disabled');
             });
 
             m.Buttons.push(b);
@@ -446,6 +507,7 @@ var application = function(){
     function TODO(name){
         alert(name);
     }
+
 
     function adminRowSelect(el){
         el = el.target;
@@ -471,8 +533,10 @@ var application = function(){
 
     function clearSelectedRows(){
         appState.SelectedRow = null;
+        appState.AdminRequest = null;
 
         $('.item-row').removeClass('edit-item');
+        adminActionsEnableRelevant(null);
     }
 
     function adminActionsEnableRelevant(item){
@@ -527,6 +591,12 @@ var application = function(){
         }
     }
 
+    function transactionChanged() {
+        updateTransaction();
+    }
+
+
+
     return {
         startOver: startOver,
         GetState: getAppState,
@@ -537,7 +607,8 @@ var application = function(){
         action_TransactionComplete: actionTransactionComplete,
         action_AdminModeEnter: adminModeEnter,
         action_AdminModeExit: adminModeExit,
-        Background_ScanHandle: background_scanHandle
+        Background_ScanHandle: background_scanHandle,
+        Background_TransactionChanged: transactionChanged
     }
 }
 

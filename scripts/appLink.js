@@ -31,6 +31,14 @@ var appLink = (function(fake){
     }
     
     generateTestData();
+    (function() {
+      for(var i = 0; i < 5; i++){
+        var item = itemRepository[i % itemRepository.length];
+        if (item){
+          test_addToTransaction(item);
+        }
+      }
+    })();
     
     function coupon(name,price, upc){
       var c = new itemModel();
@@ -72,7 +80,8 @@ var appLink = (function(fake){
     function test_addToTransaction(item){
       var x = item.Clone();
       x.ItemId = this.lineCount++;
-      transaction.push(x);
+      //transaction.push(x);
+      transaction.unshift(x);
       return x.ItemId;
     }
     
@@ -149,14 +158,21 @@ var appLink = (function(fake){
       return transaction;
     }
 
+    function getTransactionItemById(id){
+      for(var i = 0; i < transaction.length; i++){
+        if (transaction[i].ItemId == id){
+            return transaction[i];
+        }
+      }
+    }
+
     function getTotals(){
       var t = new transactionTotalModel();
       
       // returns a Totals model
 
       for(var i = 0; i < transaction.length; i++){
-        console.log(transaction[i]);
-        t.Subtotal += transaction[i].PriceCurrent;
+        t.Subtotal += transaction[i].PriceCurrent * transaction[i].Quantity;
         t.ItemCount = i;
       }
       
@@ -185,8 +201,9 @@ var appLink = (function(fake){
     function removeItemFromTransaction(itemId){
       // remove this ItemId from the transaction list
       for(var i = 0; i < transaction.length; i++){
-        if (transaction[i].ItemId === itemId){
-          transaction = transaction.splice(i,1);
+        if (transaction[i].ItemId === toNumber(itemId)){
+          transaction.splice(i,1);
+          return;
         }
       }
     }
@@ -207,11 +224,12 @@ var appLink = (function(fake){
 
     }
 
-    function cleanInput(input){
+    function toNumber(input){
       if (input == null){
         return;
       }
-      return input.replace('$','').replace('%','');
+      var stripped = input.replace('$','').replace('%','');
+      return parseFloat(stripped);
     }
 
     function applyPriceOverride(adminRequest){
@@ -219,26 +237,38 @@ var appLink = (function(fake){
       // reasonId should maybe be a message
       // and possibly this should change to a PriceOverrideRequest model
       var id = adminRequest.ItemId;
-      for(var i = 0; i < transaction.length; i++){
-        if (transaction[i].ItemId == id){
-          transaction[i].PriceCurrent = cleanInput(adminRequest.RequestAmount);
-          break;
-        }
+      var item = getTransactionItemById(id);
+      if (item != null){
+        item.PriceOriginal = item.PricCurrent;
+        item.PriceCurrent = toNumber(adminRequest.RequestAmount);
       }
-
     }
 
     function applyDiscountDollar(adminRequest){
       // change the price of the itemId to this amount
+      var item = getTransactionItemById(adminRequest.ItemId);
+      if (item != null){
+        item.PriceOriginal = item.PricCurrent;
+        item.PriceCurrent = item.PriceCurrent - toNumber(adminRequest.RequestAmount);
+      }
     }
 
     function applyDiscountPercent(adminRequest){
       // discount the itemId's price by this amount
+      var item = getTransactionItemById(adminRequest.ItemId);
+      if (item != null){
+        item.PriceOriginal = item.PricCurrent;
+        item.PriceCurrent = item.PriceCurrent * toNumber(adminRequest.RequestAmount);
+      }
     }
 
     function changeQuantity(adminRequest){
       // adjust the item Quantity to this number
       // front end validation for 0?
+      var item = getTransactionItemById(adminRequest.ItemId);
+      if (item != null){
+        item.Quantity = toNumber(adminRequest.RequestAmount);
+      }
     }
 
     function transactionClearItems(){
@@ -300,7 +330,21 @@ var appLink = (function(fake){
       if (value === 'admin'){
         return "ADMIN";
       }
+
       // also has "REFRESH" hooked in... /shrug
+
+      if (value === "gift"){
+        var i = item("GIFT CARD","",-4.00,1,"GIFT");
+        test_addToTransaction(i);
+        return "REFRESH";
+
+      }
+      else {
+        var i = item("SCANNED","ITEM",4.99,1,"scanned");
+        test_addToTransaction(i);
+        return "REFRESH";
+      }
+      
     }
     
     
