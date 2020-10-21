@@ -1,0 +1,27 @@
+{{! demo -- not used, but related to customer-find-grid}}
+<table class="customer-grid">
+  <tr>
+  <th>Name</th>
+  <th>Email</th>
+  <th>Phone</th>
+  <th>Last Active</th>
+  </tr>
+  {{#each this}}
+  <tr>
+    <td>{{Name}}</td>
+    <td>{{Email}}</td>
+    <td>{{Phone}}</td>
+    <td>{{LastActive}}</td>
+  </tr>
+  {{/each}}
+</table>
+<script>
+  (function(){
+    var cells = document.getElementsByTagName('td');
+    for(var i = 0; i < cells.length; i++){
+      cells[i].addEventListener('click',function(){
+        highlightRow(this);
+      })
+    }
+  })()
+</script>

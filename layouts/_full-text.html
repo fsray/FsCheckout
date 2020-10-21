@@ -1,0 +1,78 @@
+<div class="flex-middle-align">
+  <div class="user-entry full-keyboard">
+  <div class="spacer"></div>
+      <h3>{{Caption}}</h3>
+      <span class="user-input-wrap">
+      <input type="text" class="user-input">
+      </span>
+      <div class="key-pad-outer">
+        <div class="keyboard-wrapper">
+          <div class="keyboard-row number-row keyboard-numeric">
+            <button class="btn btn-key" data-key="1" data-alt="!">1</button>
+            <button class="btn btn-key" data-key="2" data-alt="@">2</button>
+            <button class="btn btn-key" data-key="3" data-alt="#">3</button>
+            <button class="btn btn-key" data-key="4" data-alt="$">4</button>
+            <button class="btn btn-key" data-key="5"data-alt="%">5</button>
+            <button class="btn btn-key" data-key="6"data-alt="^">6</button>
+            <button class="btn btn-key" data-key="7"data-alt="&">7</button>
+            <button class="btn btn-key" data-key="8"data-alt="*">8</button>
+            <button class="btn btn-key" data-key="9"data-alt="(">9</button>
+            <button class="btn btn-key" data-key="0"data-alt=")">0</button>
+            <button class="btn btn-key" data-key="-"data-alt="_">-</button>
+          </div>
+          <div class="keyboard-row keyboard-numeric">
+            <button class="btn btn-key" data-key="q">q</button>
+            <button class="btn btn-key" data-key="w">w</button>
+            <button class="btn btn-key" data-key="e">e</button>
+            <button class="btn btn-key" data-key="r">r</button>
+            <button class="btn btn-key" data-key="t">t</button>
+            <button class="btn btn-key" data-key="y">y</button>
+            <button class="btn btn-key" data-key="u">u</button>
+            <button class="btn btn-key" data-key="i">i</button>
+            <button class="btn btn-key" data-key="o">o</button>
+            <button class="btn btn-key" data-key="p">p</button>
+          </div>
+          <div class="keyboard-row keyboard-numeric">
+            <button class="btn btn-key" data-key="a">a</button>
+            <button class="btn btn-key" data-key="s">s</button>
+            <button class="btn btn-key" data-key="d">d</button>
+            <button class="btn btn-key" data-key="f">f</button>
+            <button class="btn btn-key" data-key="g">g</button>
+            <button class="btn btn-key" data-key="h">h</button>
+            <button class="btn btn-key" data-key="j">j</button>
+            <button class="btn btn-key" data-key="k">k</button>
+            <button class="btn btn-key" data-key="l">l</button>
+          </div>
+          <div class="keyboard-row keyboard-numeric">
+            <button class="btn btn-key btn-action" data-key="shift">shift</button>
+            <button class="btn btn-key" data-key="@">@</button>
+            <button class="btn btn-key" data-key="z">z</button>
+            <button class="btn btn-key" data-key="x">x</button>
+            <button class="btn btn-key" data-key="c">c</button>
+            <button class="btn btn-key" data-key="v">v</button>
+            <button class="btn btn-key" data-key="b">b</button>
+            <button class="btn btn-key" data-key="n">n</button>
+            <button class="btn btn-key" data-key="m">m</button>
+            <button class="btn btn-key" data-key=".">.</button>
+            <button class="btn btn-key btn-action" data-key=".com">.com</button>
+          </div>
+          <div class="keyboard-row keyboard-numeric">
+            <button class="btn btn-key btn-action" data-key="clr">Clear</button>
+            <button class="btn btn-key btn-space" data-key="&#32"> </button>
+            <button class="btn btn-key btn-action" data-key="bksp">Delete</button>
+          </div>
+        </div>
+    
+        <div class="action-key-wrapper">
+        <button class="btn cancel-btn" data-action="{{OnCancel}}"><span>X</span><br>Cancel</button>
+        <button class="btn ok-btn" data-action="{{OnSubmit}}"><span>O</span><br>OK</button>
+        </div>
+        </div>
+      </div>
+  </div>
+</div>
+<script>
+  (function(){
+    kiosk.startKeyboard('.keyboard-wrapper');
+  })()
+  </script>

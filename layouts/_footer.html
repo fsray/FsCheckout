@@ -1,0 +1,29 @@
+
+{{#if ShowHelp}}
+<div class="left-btn">
+    <button class="btn" data-action="help_show">Help</button>
+</div>
+{{/if}}
+{{#if (eq ContextMode 0)}}
+{{! NO CUSTOMER MODE}}
+<div class="right-btn">
+    <span>{{CustomerMessage}}</span> 
+    <button class="btn" data-action="customer_lookup">Enter Phone #</button>
+</div>
+{{/if}}
+{{#if (eq ContextMode 1)}}
+{{! CUSTOMER MODE}}
+<div class="user-text">{{CustomerMessage}}</div>
+<div class="right-btn">
+    <span>Not you?</span> 
+    <button class="btn" data-action="customer_unlink">Unlink Account</button>
+</div>
+{{/if}}
+{{#if (eq ContextMode 2)}}
+{{! ADMIN MODE}}
+<div class="user-text">{{CustomerMessage}}</div>
+<div class="right-btn">
+    <button class="btn" data-action="admin_exit">Exit</button>
+</div>
+
+{{/if}}

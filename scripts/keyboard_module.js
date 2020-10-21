@@ -75,9 +75,10 @@ var kiosk = function () {
         },
         onInputGainFocus = function (ctrl) {
             console.log("gained focus: " + ctrl.name);
-
             if (ctrl) {
-                
+              if (ctrl.id === 'input-buffer'){
+                return;
+              }
                 // if we were already tracking an input control, stop tracking it
                 if (document.keyboardInput) {
                     clearCursorTracking(document.keyboardInput);
@@ -92,6 +93,15 @@ var kiosk = function () {
                     document.showKeyboard = true;
                 var scroll = $(ctrl).hasClass("scroll-on-focus");
                 showKeyboard(scroll);
+
+                if (document.keyboardInput != null){
+                    var deci = $(document.keyboardInput).siblings('decimal-field').first();
+                    if (deci.length){
+                        console.log('YES DECI',deci.value);
+                        deci = deci[0];
+                        $(document.keyboardInput).val(deci.value);
+                    }
+                }
               }
             }
             
@@ -157,6 +167,14 @@ var kiosk = function () {
             if (key) {
                 if (!$(key).hasClass('disabled')) {
                     var keyData = $(key).data('key');
+                    var deciHelper = null;
+                    if (document.keyboardInput != null){
+
+                        var h = $(document.keyboardInput).siblings('decimal-field').first();
+                        if (h.length){
+                            deciHelper = h[0];
+                        }
+                    }
 
                     // grab the "long-press" character
                     if (isAlt){
@@ -199,8 +217,17 @@ var kiosk = function () {
                             document.keyboardInput.setSelectionRange(document.caretPosition, document.caretPosition);
                             return;
                         }
+                        if (keyData === 'dot'){
+                            if (deciHelper){
+                                deciHelper.toggleMode();
+                                return;
+                            }
+                        }
                         
                         var value = $(document.keyboardInput).val();
+                        if (typeof document.keyboardInput.valueChanged === 'function'){
+                            document.keyboardInput.valueChanged();
+                        }
                         
                             // handle backspace key pressed
                             // note: this does not handle cursor position at this time.
@@ -221,24 +248,36 @@ var kiosk = function () {
                             }
 
                             if (keyData === 'clr'){
-                                $(document.keyboardInput).val('');
-                                document.keyboardInput.setSelectionRange(0,0);
+                                if (deciHelper != null){
+                                    deciHelper.clearValue();
+                                    $(document.keyboardInput).val(deciHelper.value);
+                                }
+                                else {
+                                    kiosk.clearKeyboard();
+                                }
                                 return;
                             }
 
                             // all other keys
                         if (document.keyboardInput) {
                             if (keyData === 'enter') {
-                                $(document.keyboardInput).closest('form').validate();
-                                document.hasValidated = true;
-                                $(document.keyboardInput).closest('form').submit();
+                                // $(document.keyboardInput).closest('form').validate();
+                                // document.hasValidated = true;
+                                // $(document.keyboardInput).closest('form').submit();
                             } else {
                                 if ((document.keyboardCaps || document.keyboardShift) && keyData != null) {
                                     keyData = keyData.toString().toUpperCase();
                                 }
-                                value = value.substring(0, document.caretPosition) + keyData + value.substring(document.caretPosition, value.length);
-                                document.caretPosition += keyData.toString().length;
-                                $(document.keyboardInput).val(value);
+                                if (deciHelper != null){
+                                    console.log('HERE I AM',deciHelper);
+                                    deciHelper.addCharacter(keyData.toString());
+                                    $(document.keyboardInput).val(deciHelper.value);
+                                }
+                                else {
+                                    value = value.substring(0, document.caretPosition) + keyData + value.substring(document.caretPosition, value.length);
+                                    document.caretPosition += keyData.toString().length;
+                                    $(document.keyboardInput).val(value);
+                                }
                                 // undo shift if selected
                                 document.keyboardShift = false;
                                 updateKeyState(isAlt);
@@ -298,6 +337,7 @@ var kiosk = function () {
                     },settings.longPressTimer);
                     return false;
                 });
+
 
                 if (settings.showAlways)
                 {
@@ -384,7 +424,20 @@ var kiosk = function () {
                 initKeyboard(selector);
                 initCursorTracking();
                 initScanListener();
+                mainFocus();
             }
+        },
+        mainFocus = function(){
+            var j = document.getElementsByClassName('user-input');
+            for(var i = 0; i < j.length; i++){
+                onInputGainFocus(j[i]);
+                break;
+            }
+        },
+        clearInput = function(){
+            $(document.keyboardInput).val('');
+            document.keyboardInput.setSelectionRange(0,0);
+            return;
         },
         destroy = function(){
           
@@ -395,7 +448,8 @@ var kiosk = function () {
         navigateBack: navigateBack,
         hideEmptyInventory: hideEmptyInventory,
         showKeyboard: showKeyboard,
-        startKeyboard: init
+        startKeyboard: init,
+        clearKeyboard: clearInput
     };
 }
 

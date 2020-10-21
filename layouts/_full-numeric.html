@@ -1,0 +1,49 @@
+{{! customerPhone -- no model}}
+<div class="flex-middle-align">
+<div class="full-width user-entry">
+  <h3>{{Caption}}</h3>
+  <span class="user-input-wrap">
+    <input type="text" class="user-input" />
+    {{#if IsDecimal}}
+    <decimal-field prefix="{{Prefix}}" append="{{Append}}"></decimal-field>
+    {{/if}}
+    </span>
+  <div class="key-pad-outer">
+      <div class="keyboard-wrapper keyboard-numeric">
+        <div class="keyboard-row number-row">
+          <button class="btn btn-key" data-key="1">1</button>
+          <button class="btn btn-key" data-key="2">2</button>
+          <button class="btn btn-key" data-key="3">3</button>
+        </div>
+        <div class="keyboard-row number-row">
+          <button class="btn btn-key" data-key="4">4</button>
+          <button class="btn btn-key" data-key="5">5</button>
+          <button class="btn btn-key" data-key="6">6</button>
+        </div>
+        <div class="keyboard-row number-row">
+          <button class="btn btn-key" data-key="7">7</button>
+          <button class="btn btn-key" data-key="8">8</button>
+          <button class="btn btn-key" data-key="9">9</button>
+        </div>
+        <div class="keyboard-row number-row">
+          <button class="btn btn-key btn-action" data-key="clr">Clear</button>
+          <button class="btn btn-key" data-key="0">0</button>
+          {{#if IsDecimal}}
+          <button class="btn btn-key btn-action" data-key="dot">.</button>
+          {{else}}
+          <button class="btn btn-key btn-action" data-key="bksp">Delete</button>
+          {{/if}}
+        </div>
+      </div>
+      <div class="action-key-wrapper">
+      <button class="btn cancel-btn" data-action="{{OnCancel}}"><span>X</span><br>Cancel</button>
+      <button class="btn ok-btn" data-action="{{OnSubmit}}"><span>O</span><br>OK</button>
+      </div>
+    </div>
+</div>
+</div>
+<script>
+  (function(){
+    kiosk.startKeyboard('.keyboard-wrapper');
+  })()
+  </script>

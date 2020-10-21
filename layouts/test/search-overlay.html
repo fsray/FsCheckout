@@ -1,0 +1,122 @@
+{{! demo -- not used}}
+<script src="../scripts/plugin/jquery-3.5.1.min.js"></script>
+	<script src="../scripts/plugin/handlebars-4.7.6.min.js"></script>
+<script src="../scripts/appLink.js"></script>
+<script src="../scripts/main.js"></script>
+<link rel="stylesheet" href="../styles/base.css">
+<link rel="stylesheet" href="../styles/client.css">
+<style>
+  .search-overlay, body {
+    background-color:#d0d0d0;
+    
+}
+
+.search-overlay .btn {
+    line-height: 50px;
+    padding: 14px 35px;
+}
+.search-overlay .btn-empty {
+    background-color:transparent;
+    color:red;
+    border:4px solid red;
+}
+
+.search-result {
+    width: 95%;
+    height: 660px;
+    background: #fff;
+    box-sizing: content-box;
+    margin: 0 auto;
+    margin-top: 30px;
+    overflow-y:scroll;
+}
+.search-result .customer-grid{
+    background-color:#fff;
+    padding:20px;
+    width:100%;
+    /* height: 100%; */
+}
+.customer-grid {
+    text-align:left;
+}
+.customer-grid td {
+    margin-bottom:5px;
+    border: 1px solid grey;
+    padding: 10px;
+    cursor:pointer;
+}
+.customer-grid th {
+    padding: 4px;
+    background: #dedede;
+    border: 1px solid #959595;
+}
+
+.search-footer .btn {
+    position: absolute;
+    right: 30px;
+}
+
+.search-footer {
+    margin-top: 20px;
+}
+.search-result tr.selected {
+    background-color: #ffcfcf;
+}
+.btn.disabled {
+    background: #8b8b8b;
+    cursor: not-allowed;
+}
+.search-message {
+    font-size: 2rem;
+    font-weight: bold;
+    /* line-height: 20px; */
+    /* vertical-align: middle; */
+    /* padding-top: 20px; */
+    height: 70px;
+    line-height: 70px;
+    display: block;
+    text-align: center;
+}
+a.btn.btn-empty {
+    position:absolute;
+    left:20px;
+    height:60px;
+    line-height:60px;
+    padding:0px 50px;
+    font-weight:bold;
+    border:3px solid #ba0000;
+    color:#ba0000;
+}
+.btn-action {
+    background:#ba0000;
+}
+.search-header {
+    margin-top:10px;
+}
+</style>
+
+<div class="search-overlay">
+  <div class="search-header">
+    <a href="#" class="btn btn-empty">Back</a>
+    <div class="search-message">
+      Results for "207-345-5678"
+    </div>
+
+  </div>
+  <div class="search-result">
+  </div>
+  <div class="search-footer">
+  <a href="#" class="btn btn-action disabled">Choose Account</a>
+  </div>
+</div>
+
+<script>
+  var custs = appLink.GetCustomerSearch();
+  templateManager.Render('customerSearchGrid','.search-result',custs);
+
+  function highlightRow(el){
+    $(el).closest('table').find('tr').removeClass('selected');
+    $(el).closest('tr').addClass('selected');
+    $('.search-footer .btn-action').removeClass('disabled');
+  }
+</script>

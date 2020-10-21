@@ -1,0 +1,11 @@
+{
+    "ClientLogo":"/images/hf-logo.png",
+    "Customer_EnterEmail":"Enter your Email",
+    "Customer_EnterPhone":"Enter your Phone #",
+    "HelpText":"Need help with your transaction? <br>Ask a clerk to assist you.",
+    "PinpadInstructions":"Follow the instructions<br>on the pin pad",
+    "ScanInstructions":"Scan your items",
+    "Start_CustomerPrompt_Primary":"Have an Account?",
+    "Start_CustomerPrompt_Secondary":"Scan your Account Card<br>or",
+    "TranactionComplete_Primary":"Thank you for shopping with us"
+}

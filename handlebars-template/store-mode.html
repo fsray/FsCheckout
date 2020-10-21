@@ -1,9 +1,10 @@
 <link href="../styles/keyboard-style.css" rel="stylesheet" />
 <link rel="stylesheet" href="../styles/base.css">
+<div class="store-mode">
 <div class="content">
   <div class="left-col">
     <div class="items">
-      <h1>Scan your items</h1>
+      <h1>Exit items</h1>
       <div class="item-container">
         <div class="item-row">
           <div class="item-img"><img src="/images/test-item.png"></div>
@@ -20,7 +21,7 @@
           <div class="item-name">Fromm dog food - classic adult</div>
           <div class="item-price">$20.84</div>
         </div>
-        <div class="item-row">
+        <div class="item-row edit-item">
           <div class="item-img"><img src="/images/test-item.png"></div>
           <div class="item-name">Fromm dog food - classic adult</div>
           <div class="item-price">$20.84</div>
@@ -62,23 +63,21 @@
     <div class="flex-row enter-item">
       <a href="#" class="btn brand-primary">Enter Item Number</a>
     </div>
-    <div class="flex-row reward-row">
-      <a href="#" class="btn">Redeem a Giftcard</a>
-      <a href="#" class="btn">$30.52 Credit</a>
-      <a href="#" class="btn">Add a Coupon</a>
-    </div>
-    <div class="flex-row finish">
-      <a href="#" class="btn product-green">Finish and Pay</a>
+    <div class="flex-row store-mode-options">
+      <a href="#" class="btn">Price Override</a>
+      <a href="#" class="btn">Discount %</a>
+      <a href="#" class="btn">Discount $ Amount</a>
+      <a href="#" class="btn">Change Qty</a>
+      <a href="#" class="btn">Remove Item</a>
+      <a href="#" class="btn disabled">Clear Transaction</a>
     </div>
   </div>
 </div>
 
-<div class="footer brand-primary">
-  <div class="left-btn">
-    <a class="btn" href="#">Help</a>
-  </div>
-  <div class="user-text">Welcome back, User!</div>
+<div class="footer">
+  <div class="user-text">Store Mode</div>
   <div class="right-btn">
-    <span>Not you?</span> <a class="btn" href="#">Unlink Account</a>
+    <a class="btn" href="#">Exit</a>
   </div>
+</div>
 </div>
