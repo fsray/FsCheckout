@@ -753,3 +753,7 @@ span.user-input-wrap.percent:before {
   top:19px;
   font-size:35px;
 }
+
+decimal-field {
+  display:none;
+}

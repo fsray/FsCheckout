@@ -24,7 +24,7 @@ function customerModel(){
         this.Name= "";
         this.StoreCredit= 0;
         this.LoyaltyPoints= 0;
-        this.IsEmpty= this.StoreCredit == null && this.LoyaltyPoints == null && this.Name == null;
+        this.IsEmpty= true;
         this.Email= null;
         this.Phone= null;
         this.LastActive= null

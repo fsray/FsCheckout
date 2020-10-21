@@ -1,9 +1,10 @@
 ////// MAIN APP LOGIC ////////
 var application = function(){
 
-    if (false){
+    if (true){
         function TEST(){
-            customerPhoneLookup('555');
+            customerPhoneLookup('1');
+            actionEnterItemSubmit('1');
             adminModeEnter();
             updateTransaction();
         }
@@ -123,9 +124,11 @@ var application = function(){
         var t = $(input).closest('.user-input-wrap');
         t.addClass('validation');
         t.prepend('<span class="validation-message">' + message + '</span>');
-        input.valueChanged = function(){
-            clearValidation(this);
-        };
+        if (input != null){
+            input.valueChanged = function(){
+                clearValidation(this);
+            };
+        }
     }
     function clearValidation(input){
         var t = $(input).closest('.user-input-wrap');
@@ -142,8 +145,8 @@ var application = function(){
 
         templateManager.Render('numericPad','.right-content',m);
     }
-    function actionEnterItemSubmit(){
-        var input = null;
+    function actionEnterItemSubmit(val){
+        var input = val;
         if (document.keyboardInput){
             input = document.keyboardInput.value;
         }
@@ -158,7 +161,7 @@ var application = function(){
             kiosk.clearKeyboard();
             return;
         }
-        updateTransaction();
+
         resumeTransaction();
 
     }
@@ -182,8 +185,18 @@ var application = function(){
 
     function actionAddCouponSubmit(){
         // todo: check if valid coupon,
+        var input = helper_inputValue();
+        var result = appLink.AddCouponToTransaction(input);
         // raise validation if not
-        // apply and refresh
+        if (result == "SUCCESS"){
+            resumeTransaction(true);
+        }
+        else if (result != null){
+            validation(document.keyboardInput,result);
+        }
+        else {
+            validation(document.keyboardInput,'Invalid Coupon Code');
+        }
     }
 
     function actionFinishAndPay(){
@@ -244,6 +257,7 @@ var application = function(){
             startTransaction(appLink.GetCurrentCustomer());
         }
         else {
+            updateTransaction();
             resetTransactionRight();
         }
 
@@ -253,6 +267,7 @@ var application = function(){
     function getFooterModel(){
         var m = new footerModel();
         var c = appLink.GetCurrentCustomer();
+        console.log(c);
         if (appState.IsAdminMode){
             m.ContextMode = 2;
             m.ShowHelp = false;
@@ -314,7 +329,12 @@ var application = function(){
     }
 
     function adminDiscountPercent(){
-        
+        if (appState.SelectedRow == null){
+            return;
+        }
+
+        appState.AdminRequest = new adminRequest();
+
     }
 
     function adminDiscountPercentSubmit(){
@@ -322,32 +342,61 @@ var application = function(){
     }
 
     function actionPriceOverrideShow(){
+
+        var submit = action("action_OverrideReasonSelect",function(){
+            var i = helper_inputValue();
+            if (i > ''){
+                appState.AdminRequest.RequestAmount = i;
+                actionPriceOverrideReasonList();
+            }
+            else {
+                validation(document.keyboardInput,'Amount is invalid');
+            }
+        });
+
+        getAdminRequest(requestTypeList.PriceOverride, submit);
+    }
+
+    function getAdminRequest(requestType, submitAction){
         if (appState.SelectedRow == null){
             return;
         }
 
         appState.AdminRequest = new adminRequest();
-        appState.AdminRequest.RequestType = requestTypeList.PriceOverride;
-        appState.AdminRequest.RequestItem = appState.SelectedRow;
-
+        appState.AdminRequest.RequestType = requestType;
+        appState.AdminRequest.ItemId = appState.SelectedId;
 
         var m = new inputModel();
-        m.Caption = "Enter Price for Override";
-        m.OnSubmit = action("action_OverrideReasonSelect",function(){
-            if (document.keyboardInput){
-                var input = document.keyboardInput.value;
-                if (input > ''){
-                    appState.AdminRequest.RequestAmount = input;
-                    actionPriceOverrideReasonList();
-                }
-                else {
-                    validation(document.keyboardInput, 'Amount is invalid');
-                }
-            }
-        });
-        m.OnCancel = action("action_OverrideCancel",resumeTransaction);
-
+        m.IsDecimal = true;
+        m.Prefix = "$";
+        switch(requestType){
+            case requestTypeList.PriceOverride:
+                m.Caption = "Enter Price for Override";
+                break;
+            case requestTypeList.DiscountPercent:
+                m.Caption = "Enter Percentage to Discount";
+                m.Prefix = '';
+                m.Append = "%";
+                break;
+            case requestTypeList.DiscountAmount:
+                m.Caption = "Enter Amount to Discount";
+                break;
+            case requestTypeList.QuantityChange:
+                m.Caption = "Enter new Quantity";
+                m.Prefix = '';
+                break;
+        }
+        m.OnSubmit = submitAction;
+        m.OnCancel = action("action_CancelAdmin",resumeTransaction);
         templateManager.Render('numericPad','.right-content',m);
+    }
+
+    function helper_inputValue() {
+        if (document.keyboardInput != null){
+            return document.keyboardInput.value;
+        }
+
+        return null;
     }
 
     function actionPriceOverrideReasonList(){
@@ -374,8 +423,6 @@ var application = function(){
             
             b.OnSubmit = action("reason_" + reasons[i].ReasonId, function(){
                 appState.AdminRequest.RequestId = reasons[i].ReasonId;
-                appLink.ApplyPriceOverride(appState.AdminRequest);
-                resumeTransaction();
             });
 
             m.Buttons.push(b);
@@ -383,7 +430,15 @@ var application = function(){
 
         console.log(m);
         m.OnSubmit = action("action_AdminModeEnter", resumeTransaction);
-        m.OnCancel = action("action_AdminModeEnter", resumeTransaction);
+        m.OnCancel = action("action_AdminModeEnter", function() {
+
+            if (appState.AdminRequest.RequestId != null){
+
+                appLink.ApplyPriceOverride(appState.AdminRequest);
+                // finally
+                resumeTransaction();
+            }
+        });
 
         templateManager.Render('admin-priceOverride','.right-content',m);
     }
@@ -406,6 +461,7 @@ var application = function(){
         if (appState.IsAdminMode && !isSelected){
             $(el).addClass('edit-item');
             appState.SelectedRow = el;
+            appState.SelectedId = $(el).find('a').attr('data-item-id');
             adminActionsEnableRelevant(el);
         }
         else {
@@ -461,6 +517,16 @@ var application = function(){
         $('.store-mode-options .btn').addClass('disabled');
     }
 
+    function background_scanHandle(scanValue){
+        var x = appLink.GetScanAction(scanValue);
+        if (x == 'ADMIN'){
+            adminModeEnter();
+        }
+        else if (x == 'REFRESH'){
+            updateTransaction();
+        }
+    }
+
     return {
         startOver: startOver,
         GetState: getAppState,
@@ -470,7 +536,8 @@ var application = function(){
         action_HelpShow: actionHelpShow,
         action_TransactionComplete: actionTransactionComplete,
         action_AdminModeEnter: adminModeEnter,
-        action_AdminModeExit: adminModeExit
+        action_AdminModeExit: adminModeExit,
+        Background_ScanHandle: background_scanHandle
     }
 }
 

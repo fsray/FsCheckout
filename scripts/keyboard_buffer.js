@@ -36,6 +36,7 @@ var keyboard_buffer = (function(){
       }
       if (event){
         if (event.key === "Enter"){
+          app.Background_ScanHandle(el.value);
           keyboard_monitor(el.value);
           el.value = '';
         }
@@ -43,10 +44,8 @@ var keyboard_buffer = (function(){
     }
 
     function keyboard_monitor(value){
+      // TODO: DEV // just for monitoring scanner data
       $('#background-buffer').html(value);
-      if (value === "admin"){
-        app.action_AdminModeEnter();
-      }
     }
 
     generateKeyboard();

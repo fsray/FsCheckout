@@ -4,6 +4,9 @@
     <h3>{{Caption}}</h3>
     <span class="user-input-wrap">
     <input type="text" class="user-input">
+    {{#if IsDecimal}}
+    <decimal-field prefix="{{Prefix}}" append="{{Append}}"></decimal-field>
+    {{/if}}
     </span>
     <div class="key-pad-outer">
       <div class="keyboard-wrapper keyboard-numeric">
@@ -25,7 +28,11 @@
         <div class="keyboard-row number-row">
           <button class="btn btn-key btn-action" data-key="clr">Clear</button>
           <button class="btn btn-key" data-key="0">0</button>
+          {{#if IsDecimal}}
+          <button class="btn btn-key btn-action" data-key="dot">.</button>
+          {{else}}
           <button class="btn btn-key btn-action" data-key="bksp">Delete</button>
+          {{/if}}
         </div>
       </div>
       <div class="action-key-wrapper">

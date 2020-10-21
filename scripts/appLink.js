@@ -34,10 +34,10 @@ var appLink = (function(fake){
     
     function coupon(name,price, upc){
       var c = new itemModel();
-      item.Name = name;
-      item.PriceCurrent = price;
-      item.IsCoupon = true;
-      item.Identifier = upc;
+      c.Name = name;
+      c.PriceCurrent = price;
+      c.IsCoupon = true;
+      c.Identifier = upc;
 
       return c;
     }
@@ -63,6 +63,7 @@ var appLink = (function(fake){
       c.Email = email;
       c.Phone = phone;
       c.LastActive = lastActive;
+      c.IsEmpty = false;
 
       return c;
     }
@@ -78,7 +79,7 @@ var appLink = (function(fake){
     /// returns a Customer object
     // addCustomerToTransaction
     function getCustomer(phone, email){
-      var _customer = new customerModel();
+      _customer = new customerModel();
 
         if (phone){
           for(var i = 0; i < customerRepository.length; i++){
@@ -172,7 +173,8 @@ var appLink = (function(fake){
       // otherwise, return null
       for(var i = 0; i < couponRepository.length; i++){
         if (couponRepository[i].Identifier.indexOf(input) > -1){
-          return test_addToTransaction(couponRepository[i]);
+            test_addToTransaction(couponRepository[i]);
+            return "SUCCESS";
         }
       }
 
@@ -205,10 +207,25 @@ var appLink = (function(fake){
 
     }
 
+    function cleanInput(input){
+      if (input == null){
+        return;
+      }
+      return input.replace('$','').replace('%','');
+    }
+
     function applyPriceOverride(adminRequest){
       // apply this price to the ItemId
       // reasonId should maybe be a message
       // and possibly this should change to a PriceOverrideRequest model
+      var id = adminRequest.ItemId;
+      for(var i = 0; i < transaction.length; i++){
+        if (transaction[i].ItemId == id){
+          transaction[i].PriceCurrent = cleanInput(adminRequest.RequestAmount);
+          break;
+        }
+      }
+
     }
 
     function applyDiscountDollar(adminRequest){
@@ -278,6 +295,13 @@ var appLink = (function(fake){
     function settings_RequiresPriceOverrideReason() {
       return settings.RequiresPriceOverrideReason;
     }
+
+    function ScanHandle(value){
+      if (value === 'admin'){
+        return "ADMIN";
+      }
+      // also has "REFRESH" hooked in... /shrug
+    }
     
     
     return {
@@ -300,9 +324,9 @@ var appLink = (function(fake){
       ValidateEmployee: validateEmployee,
       GetAdminActionsForItem: getAdminOptionsForItem,
       GetCurrentCustomer: getCurrentCustomer,
-
+      
+      GetScanAction: ScanHandle,
       Settings_RequiresPriceOverrideReason: settings_RequiresPriceOverrideReason
-
     }
     
   })();
