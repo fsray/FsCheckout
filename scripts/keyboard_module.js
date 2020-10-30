@@ -1,8 +1,166 @@
+
 /*
 $(document).bind("contextmenu", function(e) {
         e.preventDefault();
     });
 */
+
+function numeric_helper(isDecimal, maxValue, prefix, append) {
+    
+    // helper to flip 'undefined' values
+    this._fixUndefined = function(v,def){
+      if (def === undefined){
+        def = ''
+      }
+      
+      if (v === undefined || v === null){
+        return def;
+      }
+      
+      return v;
+    }
+  
+    // IS_DECIMAL: allow editing INT and DECIMAL
+    this.IS_DECIMAL = this._fixUndefined(isDecimal,true);
+    // don't allow INT to go above this value
+    this.MAX_VALUE = this._fixUndefined(maxValue,null);
+      
+    // helper to set default array
+    this._getBackerDefault = function() {
+        return [['0'],['0','0']];
+    }
+    
+    // holds the current 'values' broken into array
+    this.backer = this._getBackerDefault();
+    // separate INT from DECIMAL (visual)
+    this.SEP_CHAR = '.';
+
+    // for MONEY (visual)
+    this.PREFIX = this._fixUndefined(prefix);
+    // for PERCENT (visual)
+    this.APPEND = this._fixUndefined(append);
+  
+    // INT or DECIMAL for AddCharacter
+    this.TARGET = 0;
+
+    // flip to editing INT or DECIMAL for AddCharacter
+    this.setTarget = function(m) {
+      if (!this.IS_DECIMAL){
+          // always stay in INT mode
+          this.TARGET = 0;
+      }
+      else {
+        this.TARGET = parseInt(m);
+      }
+    }
+
+    // targeting INT or DECIMAL?
+    this.getTarget = function() {
+        return this.TARGET;
+    }
+
+    // Only allow 2 characters in DECIMAL field
+    this.roundDecimal = function(x){
+        x = x.splice(x.length - 2);
+        while(x.length < 2){
+            x.push('0');
+        }
+        return x;
+    }
+
+    // PUBLIC:
+
+    // add a character to backer
+    this.AddCharacter = function(c){
+        // the DECIMAL section
+        if (this.TARGET === 1){
+            let current = this.backer[1];
+            current.push(c);
+            this.backer[1] = this.roundDecimal(current);
+        }
+        else {
+          // the INT section
+            let current = this.backer[0];
+            if (current.length === 1 && current[0] === '0'){
+                current.pop();
+            }
+            current.push(c);
+          
+            // TODO: compare to MaxValue
+            if (this.MAX_VALUE != null){
+              let max = Array.from(this.MAX_VALUE.toString());
+              if (current.length > max.length){
+                current = max;
+              }
+              else {
+                try {
+                  let currValue = parseInt(current.join(''));
+                  let maxValue = parseInt(max.join(''));
+                  if (currValue > maxValue){
+                    current = max;
+                  }
+                }
+                catch {
+                  current = max;
+                }
+              }
+            }
+          
+            this.backer[0] = current;
+        }
+    }
+
+    this.ClearValue = function() {
+        this.backer = this._getBackerDefault();
+        this.setTarget(0);
+    }
+
+    this.GetValue = function(){
+        var ret =
+            this.PREFIX 
+            + this.backer[0].join('') 
+            + (this.IS_DECIMAL ? 
+                this.SEP_CHAR 
+                + this.backer[1].join('')
+                : '')
+            + this.APPEND;
+
+        return ret;
+    }
+
+    this.SetValue = function(v){
+      let start = this._getBackerDefault();
+      
+      let x = v.indexOf('.');
+      
+      let int = start[0];
+      let dec = start[1];
+      
+      if (x > -1){
+        int = Array.from(v.substring(0,x));
+        dec = Array.from(v.substring(x+1));
+      }
+      else {
+        int = Array.from(v);
+      }
+      
+      this.backer[0] = int;
+      this.backer[1] = this.roundDecimal(dec);
+      
+    }
+
+    this.ToggleMode = function() {
+        if (this.TARGET === 0){
+            this.setTarget(1);
+        }
+        else {
+            this.setTarget(0);
+        }
+    }
+}
+
+
+// KEYBOARD functionality:
 var kiosk = function () {
     var keyboardDropTime = 300;
     var activateKeyboard = true;
@@ -74,7 +232,6 @@ var kiosk = function () {
             }
         },
         onInputGainFocus = function (ctrl) {
-            console.log("gained focus: " + ctrl.name);
             if (ctrl) {
               if (ctrl.id === 'input-buffer'){
                 return;
@@ -94,21 +251,28 @@ var kiosk = function () {
                 var scroll = $(ctrl).hasClass("scroll-on-focus");
                 showKeyboard(scroll);
 
-                if (document.keyboardInput != null){
-                    var deci = $(document.keyboardInput).siblings('decimal-field').first();
-                    if (deci.length){
-                        console.log('YES DECI',deci.value);
-                        deci = deci[0];
-                        $(document.keyboardInput).val(deci.value);
+                if (document.keyboardInput != null && document.keyboardInput.DECI_HELPER === undefined){
+                    if (document.keyboardInput.hasAttribute('money')){
+                        document.keyboardInput.DECI_HELPER = new numeric_helper(true,null,'$','');
+                    }
+                    else if (document.keyboardInput.hasAttribute('percent')){
+                        document.keyboardInput.DECI_HELPER = new numeric_helper(false,100,'','%');
+                    }
+                    else if (document.keyboardInput.hasAttribute('number')){
+                        document.keyboardInput.DECI_HELPER = new numeric_helper(false,null,'','');
+                    }
+                    
+                    if (document.keyboardInput.DECI_HELPER !== undefined){
+                        $(document.keyboardInput).val(document.keyboardInput.DECI_HELPER.GetValue());
                     }
                 }
               }
             }
             
-            console.log("keyboard input: " + document.keyboardInput.name);
+            //console.log("keyboard input: " + document.keyboardInput.name);
         },
         onInputLostFocus = function (ctrl) {
-            console.log("lost focus: " + ctrl);
+            //console.log("lost focus: " + ctrl);
 
             // stop tracking this control
                 if (ctrl) {
@@ -126,7 +290,7 @@ var kiosk = function () {
             }
         },
         updateKeyState = function(isAlt) {
-            console.log('updateKeyState');
+            //console.log('updateKeyState');
             // update the keyboard
             if (isAlt){
                 return;
@@ -165,15 +329,14 @@ var kiosk = function () {
         },
         onKeyPress = function (key,isAlt) {
             if (key) {
+                
+                actionListener.ActionHappened(actionListener.ACTION_TYPE.KEY_PRESS);
+
                 if (!$(key).hasClass('disabled')) {
                     var keyData = $(key).data('key');
                     var deciHelper = null;
-                    if (document.keyboardInput != null){
-
-                        var h = $(document.keyboardInput).siblings('decimal-field').first();
-                        if (h.length){
-                            deciHelper = h[0];
-                        }
+                    if (document.keyboardInput != null && document.keyboardInput.DECI_HELPER !== undefined){
+                        deciHelper = document.keyboardInput.DECI_HELPER;
                     }
 
                     // grab the "long-press" character
@@ -219,7 +382,7 @@ var kiosk = function () {
                         }
                         if (keyData === 'dot'){
                             if (deciHelper){
-                                deciHelper.toggleMode();
+                                deciHelper.ToggleMode();
                                 return;
                             }
                         }
@@ -249,8 +412,8 @@ var kiosk = function () {
 
                             if (keyData === 'clr'){
                                 if (deciHelper != null){
-                                    deciHelper.clearValue();
-                                    $(document.keyboardInput).val(deciHelper.value);
+                                    deciHelper.ClearValue();
+                                    $(document.keyboardInput).val(deciHelper.GetValue());
                                 }
                                 else {
                                     kiosk.clearKeyboard();
@@ -270,8 +433,8 @@ var kiosk = function () {
                                 }
                                 if (deciHelper != null){
                                     console.log('HERE I AM',deciHelper);
-                                    deciHelper.addCharacter(keyData.toString());
-                                    $(document.keyboardInput).val(deciHelper.value);
+                                    deciHelper.AddCharacter(keyData.toString());
+                                    $(document.keyboardInput).val(deciHelper.GetValue());
                                 }
                                 else {
                                     value = value.substring(0, document.caretPosition) + keyData + value.substring(document.caretPosition, value.length);
@@ -454,3 +617,5 @@ var kiosk = function () {
 }
 
 kiosk = new kiosk();
+
+

@@ -9,7 +9,7 @@
     <div class="flex-row reward-row">
         <button data-action="action_redeemGiftCard" class="btn">Redeem a Giftcard</button>
         {{#if (eq IsEmpty 0)}}
-        <button data-action="action_addCredit" class="btn">${{StoreCredit}} Credit</button>
+        <button data-action="action_addCredit" class="btn">{{StoreCredit}} Credit</button>
         {{/if}}
         <button data-action="action_addCoupon" class="btn">Add a Coupon</button>
     </div>

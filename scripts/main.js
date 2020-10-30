@@ -1,7 +1,16 @@
 ////// MAIN APP LOGIC ////////
 var application = function(){
 
-    if (true){
+    // what to do with background scanning?
+
+    var buffer_mode = {
+        "NORMAL": 0,
+        "GIFT_CARD":1
+    }
+
+    var timer_mode = idleTimer.TimerMode;
+
+    if (false){
         function TEST(){
             customerPhoneLookup('1');
             actionEnterItemSubmit('1');
@@ -9,6 +18,11 @@ var application = function(){
             updateTransaction();
         }
     }
+
+    // setup idle reset:
+    actionListener.EventRegister('idle_reset',autoClearTransaction);
+
+
     function startOver(){
         if (typeof TEST === 'function'){
             TEST();
@@ -16,16 +30,44 @@ var application = function(){
         }
         console.log('start over');
         
+        appState.TransactionStarted = false;
+        
+        setTransactionClearTimer(null); // clear out timer when we start
+
         templateManager.Render("start","#display", action('customer-lookup',customerLookup));
     }
 
 
+
+    function setTransactionClearTimer(timerType){
+        console.log('Clear transaction set:',timerType);
+        idleTimer.SetTimer(timerType,function(){
+            actionListener.EventTrigger('idle_reset');
+        });
+    }
+
+
+    function autoClearTransaction(){
+        appLink.TransactionCanReset().then(y=>{
+            if (y){
+                appLink.TransactionReset().then(d=>{
+                    console.log('RESETTING TRANSACTION');
+                    startOver();
+                });
+            }
+        })
+    }
+
+
     var appState = {
-        IsAdminMode: false
+        IsAdminMode: false,
+        TransactionStarted: false,
+        BufferMode: buffer_mode.NORMAL 
     }
 
     function startTransaction(customer){
         templateManager.Render("scan","#display",customer);
+        appState.TransactionStarted = true;
         resetTransactionRight();
         updateTransaction();
     }
@@ -37,16 +79,20 @@ var application = function(){
             return;
         }
 
-        var m = appLink.GetCurrentCustomer();
-        m.actions = [
-            action("action_enterItem",actionEnterItem),
-            action("action_redeemGiftCard",actionRedeemGiftCard),
-            action("action_addCredit",actionAddCredit),
-            action("action_addCoupon",actionAddCoupon),
-            action("finish_pay",actionFinishAndPay)
-        ]
+        var m = null;
+        appLink.GetCurrentCustomer().then((cust)=>{
+            m = cust;
+            m.actions = [
+                action("action_enterItem",actionEnterItem),
+                action("action_redeemGiftCard",actionRedeemGiftCard),
+                action("action_addCredit",actionAddCredit),
+                action("action_addCoupon",actionAddCoupon),
+                action("finish_pay",actionFinishAndPay)
+            ]
 
-        templateManager.Render("tran-right",'.right-content',m)
+            templateManager.Render("tran-right",'.right-content',m)
+        });
+        
     }
     
     function addCustomerToTransaction(customer){
@@ -55,35 +101,46 @@ var application = function(){
     
     function updateTransaction(){
         // dependent on the Scan template
-        var items = appLink.GetTransactionItems();
-        items.actions = [
-            action("row_select",adminRowSelect),
-            action("item_remove",function(){
-                event.cancelBubble = true;
-                var item = event.target;
-                if (item != null){
-                    var id = item.getAttribute('data-item-id');
-                    appLink.RemoveItemFromTransaction(id);
-                }
-                updateTransaction();
-            }),
-            action("item_prompt",function(){
-                event.cancelBubble = true;
-                var item = event.target;
-                if (item != null){
-                    var id = item.getAttribute('data-item-id');
-                    appLink.ApplyLoyaltyProgram(id);
-                }
-                updateTransaction();
+        var items = null;
+        appLink.GetTransactionItems().then((list)=>{
+            items = list;
+            items.actions = [
+                action("row_select",adminRowSelect),
+                action("item_remove",function(){
+                    event.cancelBubble = true;
+                    var item = event.target;
+                    if (item != null){
+                        var id = $(item).data('item-id');
+                        appLink.RemoveItemFromTransaction(id);
+                    }
+                    updateTransaction();
+                }),
+                action("item_prompt",function(){
+                    event.cancelBubble = true;
+                    var item = event.target;
+                    if (item != null){
+                        var id = $(item).data('item-id');
+                        appLink.ApplyLoyaltyProgram(id);
+                    }
+                    updateTransaction();
+                })
+            ]
+            templateManager.Render("itemList",".item-container",items);
+            appLink.GetTotals().then((t)=>{
+                templateManager.Render("itemTotal",".totals",t);
             })
-        ]
-        templateManager.Render("itemList",".item-container",items);
-        templateManager.Render("itemTotal",".totals",appLink.GetTotals());
-        templateManager.Render('footer','.footer',getFooterModel())
-        
+            getFooterModel().then(f=>{
+                templateManager.Render('footer','.footer',f);
+            })
+            
+        });
+
+        setTransactionClearTimer(timer_mode.TRANSACTION_IDLE);
     }
 
     function customerLookup(){
+
+        setTransactionClearTimer(timer_mode.TRANSACTION_IDLE); 
         templateManager.Render("customerEntry","#display");
     }
 
@@ -93,13 +150,14 @@ var application = function(){
             val = document.keyboardInput.value;
         }
 
-        var cust = appLink.AddCustomerToTransaction_Phone(val);
-        if (cust.IsEmpty){
-            validation(document.keyboardInput,'Customer not found!');
-        }
-        else {
-            startTransaction(cust);
-        }
+        appLink.AddCustomerToTransaction_Phone(val).then((cust)=>{
+            if (cust.IsEmpty){
+                validation('Customer not found!');
+            }
+            else {
+                startTransaction(cust);
+            }
+        })
     }
 
     function customerEmailLookup(code){
@@ -108,20 +166,30 @@ var application = function(){
             val = document.keyboardInput.value;
         }
 
-        var cust = appLink.AddCustomerToTransaction_Email(val);
-        if (cust.IsEmpty){
-            validation(document.keyboardInput,'Customer not found!');
-        }
-        else {
-            startTransaction(cust);
-        }
+        appLink.AddCustomerToTransaction_Email(val).then((cust)=>{
+            if (cust.IsEmpty){
+                validation(document.keyboardInput,'Customer not found!');
+            }
+            else {
+                startTransaction(cust);
+            }
+        });
     }
 
     function getAppState(){
         return appState;
     }
 
-    function validation(input,message){
+    function validation(message){
+        if (document.keyboardInput != null){
+            _set_validation(document.keyboardInput, message);
+        }
+        else {
+            console.log('set-validation error',message);
+        }
+    }
+
+    function _set_validation(input,message){
         var t = $(input).closest('.user-input-wrap');
         t.addClass('validation');
         t.prepend('<span class="validation-message">' + message + '</span>');
@@ -153,25 +221,27 @@ var application = function(){
         }
         if (input == null){
             resumeTransaction();
-        }
-
-        var added = appLink.AddItemToTransaction(input);
-        console.log(added);
-        if (added === null){
-            validation(document.keyboardInput, 'Item not found');
-            kiosk.clearKeyboard();
             return;
         }
 
-        resumeTransaction();
+        appLink.AddItemToTransaction(input).then((item)=>{
+            if (item === null){
+                validation('Item not found');
+                kiosk.clearKeyboard();
+                return;
+            }
 
+            resumeTransaction();
+        });
     }
+
     function actionRedeemGiftCard(){
         var m = new inputModel();
         m.Caption = "Scan your giftcard";
         m.OnCancel = action("action_resumeTransaction",resumeTransaction);
 
         templateManager.Render('giftCard','.right-content', m);
+        appState.BufferMode = buffer_mode.GIFT_CARD;
     }
     function actionAddCoupon(){
         var m = new inputModel();
@@ -187,17 +257,18 @@ var application = function(){
     function actionAddCouponSubmit(){
         // todo: check if valid coupon,
         var input = helper_inputValue();
-        var result = appLink.AddCouponToTransaction(input);
-        // raise validation if not
-        if (result == "SUCCESS"){
-            resumeTransaction(true);
-        }
-        else if (result != null){
-            validation(document.keyboardInput,result);
-        }
-        else {
-            validation(document.keyboardInput,'Invalid Coupon Code');
-        }
+        appLink.AddCouponToTransaction(input).then((result)=>{
+            // raise validation if not
+            if (result == "SUCCESS"){
+                resumeTransaction(true);
+            }
+            else if (result != null){
+                validation(result);
+            }
+            else {
+                validation('Invalid Coupon Code');
+            }
+        });
     }
 
     function actionFinishAndPay(){
@@ -207,14 +278,19 @@ var application = function(){
         templateManager.Render('finishAndPay','#display',m);
     }
     function actionUnlinkAccount(){
-        appLink.TranasctionUnlinkCustomer();
-        resumeTransaction();
+        appLink.TranasctionUnlinkCustomer().then(()=>{
+            resumeTransaction();
+        });
     }
     function actionHelpShow(){
         var m = new inputModel();
 
         m.OnCancel = action("action_helpCancel",function(){
-            startTransaction(appLink.GetCurrentCustomer());
+            
+            appLink.GetCurrentCustomer().then((cust)=>{
+                startTransaction(cust);
+            });
+
         });
 
         templateManager.Render('helpScreen','#display',m);
@@ -226,75 +302,93 @@ var application = function(){
     }
     function actionTransactionComplete(){
         var m = new inputModel();
+
+        
         m.OnSubmit = action("action_printReceipt",function(){
             actionPrintReceipt(true);
         });
+
         m.OnCancel = action("action_noReceipt",function(){
             actionPrintReceipt(false);
         });
 
         templateManager.Render('transactionComplete','#display',m);
+        setTransactionClearTimer(timer_mode.RECEIPT_UNKNOWN);
+        
     }
 
     function actionPrintReceipt(yes){
+
+        // will startover after a few seconds
+        setTransactionClearTimer(timer_mode.RECEIPT_CHOSEN);
+
         if (yes){
             // appLink print receipt
             TODO('Printing Receipt... PLACEHOLDER!');
+            // TODO: APPLLINK!
             // callback for "OnDonePrinting"
-            startOver();
             return;
         }
 
+        // TODO: APPLLINK!
         startOver();
     }
 
     function actionUnlinkAccount(){
-        appLink.TranasctionUnlinkCustomer();
-        resumeTransaction(true);
+        appLink.TranasctionUnlinkCustomer().then(()=>{
+            resumeTransaction(true);
+        });
     }
 
     function resumeTransaction(fromFullScreen) {
         if (fromFullScreen){
-            startTransaction(appLink.GetCurrentCustomer());
+            appLink.GetCurrentCustomer().then((cust)=>{
+                startTransaction(appLink.GetCurrentCustomer());
+            })
         }
         else {
             updateTransaction();
             resetTransactionRight();
         }
 
+        appState.BufferMode = buffer_mode.NORMAL;
+        /// does this happen at the right time?? 
         clearSelectedRows();
     }
 
-    function getFooterModel(){
-        var m = new footerModel();
-        var c = appLink.GetCurrentCustomer();
-        console.log(c);
-        if (appState.IsAdminMode){
-            m.ContextMode = 2;
-            m.ShowHelp = false;
-            m.CustomerMessage = "Store Mode";
-            m.actions = [
-                action("admin_exit",adminModeExit)
-            ]
-        }
-        else if (c != null && !c.IsEmpty){
-            m.ContextMode = 1;
-            m.CustomerMessage = "Welcome back, " + c.Name + "!";
-            m.actions = [
-                action("customer_unlink",actionUnlinkAccount),
-                action("help_show",actionHelpShow)
-            ]
-        }
-        else {
-            m.ContextMode = 0;
-            m.CustomerMessage = "Have a Frequent Feeder Account?";
-            m.actions = [
-                action("customer_lookup",customerLookup),
-                action("help_show",actionHelpShow)
-            ];
-        }
+    async function getFooterModel(){
+        
+        return appLink.GetCurrentCustomer().then((c)=>{
+            var m = new footerModel();
 
-        return m;
+            if (appState.IsAdminMode){
+                m.ContextMode = 2;
+                m.ShowHelp = false;
+                m.CustomerMessage = "Store Mode";
+                m.actions = [
+                    action("admin_exit",adminModeExit)
+                ]
+            }
+            else if (c != null && !c.IsEmpty){
+                m.ContextMode = 1;
+                m.CustomerMessage = "Welcome back, " + c.Name + "!";
+                m.actions = [
+                    action("customer_unlink",actionUnlinkAccount),
+                    action("help_show",actionHelpShow)
+                ]
+            }
+            else {
+                m.ContextMode = 0;
+                m.CustomerMessage = templateManager.GetLocaleString("Footer_NoCustomerHint","Have a Frequent Feeder Account?");
+                m.actions = [
+                    action("customer_lookup",customerLookup),
+                    action("help_show",actionHelpShow)
+                ];
+            }
+    
+            return m;
+        });
+        
     }
 
     // ADMIN FUNCTIONS //
@@ -318,7 +412,10 @@ var application = function(){
             ];
 
             templateManager.Render('admin-panel','.right-content',m);
-            templateManager.Render('footer','.footer',getFooterModel());
+            getFooterModel().then(f=>{
+                templateManager.Render('footer','.footer',f);
+            })
+            
             adminActionsEnableRelevant(null);
         }
     }
@@ -334,11 +431,13 @@ var application = function(){
             var i = helper_inputValue();
             if (i > ''){
                 appState.AdminRequest.RequestAmount = i;
-                var result = appLink.ApplyDiscountDollar(appState.AdminRequest);
-                resumeTransaction();
+                appLink.ApplyDiscountDollar(appState.AdminRequest).then((result)=>{
+                    resumeTransaction();
+                });
+                
             }
             else {
-                validation(document.keyboardInput,'Enter an Amount to discount');
+                validation('Enter an Amount to discount');
             }
         })
 
@@ -354,7 +453,7 @@ var application = function(){
                 resumeTransaction();
             }
             else {
-                validation(document.keyboardInput,'Enter a Quantity');
+                validation('Enter a Quantity');
             }
         })
 
@@ -366,14 +465,16 @@ var application = function(){
             return;
         }
 
-        appLink.RemoveItemFromTransaction(appState.SelectedId);
+        appLink.RemoveItemFromTransaction(appState.SelectedId).then(()=>{
+            resumeTransaction();
+        });
 
-        resumeTransaction();
     }
 
     function adminTransactionClear() {
-        appLink.TransactionClearItems();
-        resumeTransaction();
+        appLink.TransactionClearItems().then(()=>{
+            resumeTransaction();
+        });
     }
 
 
@@ -383,11 +484,12 @@ var application = function(){
             var i = helper_inputValue();
             if (i > ''){
                 appState.AdminRequest.RequestAmount = i;
-                var result = appLink.ApplyDiscountPercent(appState.AdminRequest);
-                resumeTransaction();
+                appLink.ApplyDiscountPercent(appState.AdminRequest).then((result)=>{
+                    resumeTransaction();
+                });
             }
             else {
-                validation(document.keyboardInput,'Enter a percentage to discount');
+                validation('Enter a percentage to discount');
             }
         })
 
@@ -395,9 +497,6 @@ var application = function(){
 
     }
 
-    function adminDiscountPercentSubmit(){
-        
-    }
 
     function actionPriceOverrideShow(){
 
@@ -408,7 +507,7 @@ var application = function(){
                 actionPriceOverrideReasonList();
             }
             else {
-                validation(document.keyboardInput,'Amount is invalid');
+                validation('Amount is invalid');
             }
         });
 
@@ -425,23 +524,22 @@ var application = function(){
         appState.AdminRequest.ItemId = appState.SelectedId;
 
         var m = new inputModel();
-        m.IsDecimal = true;
-        m.Prefix = "$";
         switch(requestType){
             case requestTypeList.PriceOverride:
                 m.Caption = "Enter Price for Override";
+                m.IsMoney = true;
                 break;
             case requestTypeList.DiscountPercent:
                 m.Caption = "Enter Percentage to Discount";
-                m.Prefix = '';
-                m.Append = "%";
+                m.IsPercent = true;
                 break;
             case requestTypeList.DiscountAmount:
+                m.IsMoney = true;
                 m.Caption = "Enter Amount to Discount";
                 break;
             case requestTypeList.QuantityChange:
                 m.Caption = "Enter new Quantity";
-                m.Prefix = '';
+                m.IsNumber = true;
                 break;
         }
         m.OnSubmit = submitAction;
@@ -457,51 +555,53 @@ var application = function(){
         return null;
     }
 
-    function actionPriceOverrideReasonList(){
+    async function actionPriceOverrideReasonList(){
 
-        var reasons = appLink.GetPriceOverrideReasonList();
+        //var reasons = appLink.GetPriceOverrideReasonList();
+        appLink.GetPriceOverrideReasonList().then((reasons)=>{
+            
+            if (reasons == null || reasons.length == 0){
+                // no reasons requrired:
+                appLink.ApplyPriceOverride(appState.AdminRequest).then(()=>
+                    resumeTransaction()
+                );
+            }
+            else {
+                // yes reasons required!
+                var m = new inputModel();
+                m.Caption = "Reason for Price Override";
+                m.Buttons = [];
         
-        // if we don't need a reason, just submit the request.
-        if (!appLink.Settings_RequiresPriceOverrideReason
-            || reasons == null 
-            || reasons.length == 0){
-            
-            appLink.ApplyPriceOverride(appState.AdminRequest);
-            resumeTransaction();
-            return;
-        }
+                for(let i = 0; i < reasons.length; i++){
+                    var b = new inputModel();
+                    b.Caption = reasons[i].Caption;
+                    
+                    b.OnSubmit = action("reason_" + reasons[i].ReasonId, function(){
+                        appState.AdminRequest.RequestId = reasons[i].ReasonId;
+                        $('.override-options .btn').removeClass('option-selected');
+                        $(this).addClass('option-selected');
+                        $('.price-override .ok-btn').removeAttr('disabled');
+                    });
+        
+                    m.Buttons.push(b);
+                }
 
-        var m = new inputModel();
-        m.Caption = "Reason for Price Override";
-        m.Buttons = [];
+                m.OnSubmit = action("action_AdminModeEnter", resumeTransaction);
+                m.OnCancel = action("action_AdminModeEnter", function() {
+        
+                    if (appState.AdminRequest.RequestId != null){
+        
+                        appLink.ApplyPriceOverride(appState.AdminRequest).then(()=>{
+                            resumeTransaction();
+                        });                        
+                    }
+                });
 
-        for(let i = 0; i < reasons.length; i++){
-            var b = new inputModel();
-            b.Caption = reasons[i].Caption;
-            
-            b.OnSubmit = action("reason_" + reasons[i].ReasonId, function(){
-                appState.AdminRequest.RequestId = reasons[i].ReasonId;
-                $('.override-options .btn').removeClass('option-selected');
-                $(this).addClass('option-selected');
-                $('.price-override .ok-btn').removeAttr('disabled');
-            });
+                templateManager.Render('admin-priceOverride','.right-content',m);
 
-            m.Buttons.push(b);
-        }
-
-        console.log(m);
-        m.OnSubmit = action("action_AdminModeEnter", resumeTransaction);
-        m.OnCancel = action("action_AdminModeEnter", function() {
-
-            if (appState.AdminRequest.RequestId != null){
-
-                appLink.ApplyPriceOverride(appState.AdminRequest);
-                // finally
-                resumeTransaction();
             }
         });
-
-        templateManager.Render('admin-priceOverride','.right-content',m);
+        
     }
 
     function TODO(name){
@@ -509,7 +609,7 @@ var application = function(){
     }
 
 
-    function adminRowSelect(el){
+    async function adminRowSelect(el){
         el = el.target;
         if (!$(el).hasClass('item-row')){
             el = $(el).closest('.item-row')[0];
@@ -523,8 +623,8 @@ var application = function(){
         if (appState.IsAdminMode && !isSelected){
             $(el).addClass('edit-item');
             appState.SelectedRow = el;
-            appState.SelectedId = $(el).find('a').attr('data-item-id');
-            adminActionsEnableRelevant(el);
+            appState.SelectedId = $(el).find('a').data('item-id');
+            await adminActionsEnableRelevant(el);
         }
         else {
             adminActionsEnableRelevant(null);
@@ -539,16 +639,18 @@ var application = function(){
         adminActionsEnableRelevant(null);
     }
 
-    function adminActionsEnableRelevant(item){
+    async function adminActionsEnableRelevant(item){
         // start by disabling all
+        adminActionsDisable();
+
+
         var m = new adminActions();
         
         if (item != null){
-            var id = item.getAttribute('data-item-id');
-            m = appLink.GetAdminActionsForItem(id);
+            var id = $(item).data('item-id');
+            //var id = item.getAttribute('data-item-id');
+            m = await appLink.GetAdminActionsForItem(id);
         }
-
-        adminActionsDisable();
 
         if (appState.SelectedRow != null){
             m.CanRemoveItem = true;
@@ -582,17 +684,53 @@ var application = function(){
     }
 
     function background_scanHandle(scanValue){
-        var x = appLink.GetScanAction(scanValue);
-        if (x == 'ADMIN'){
-            adminModeEnter();
+        if (appState.BufferMode === buffer_mode.GIFT_CARD){
+            appLink.ApplyGiftCard(scanValue).then((result)=>{
+                if (result.success){
+                    resumeTransaction();
+                }
+                else {
+                    // validation message??
+                }
+            });
         }
-        else if (x == 'REFRESH'){
-            updateTransaction();
+        else {
+            appLink.GetScanAction(scanValue).then((result)=>{
+                if (result == 'ADMIN'){
+                    if (appState.TransactionStarted){
+                        adminModeEnter();
+                    }
+                    else {
+                        // launch "no transaction admin mode"
+                        TODO('lanuch non-transaction admin mode');
+                    }
+                }
+                else if (result == 'REFRESH'){
+                    if (!appState.TransactionStarted){
+                        startTransaction(appLink.GetCurrentCustomer());
+                    }
+                }
+            });
         }
     }
 
     function transactionChanged() {
         updateTransaction();
+    }
+
+    function loadItemImage(obj){
+        if (obj != null){
+            obj = JSON.parse(obj);
+            var itemId = obj.itemId;
+            var img = obj.image;
+
+            if (img == null){
+                img = templateManager.GetLocaleString("Asset.ImageNotFound");
+            }
+
+            // blindly push it out!!
+            $('img[data-item-id="' + itemId + '"]').attr('src',img);
+        }
     }
 
 
@@ -608,7 +746,8 @@ var application = function(){
         action_AdminModeEnter: adminModeEnter,
         action_AdminModeExit: adminModeExit,
         Background_ScanHandle: background_scanHandle,
-        Background_TransactionChanged: transactionChanged
+        Background_TransactionChanged: transactionChanged,
+        ImageLoad: loadItemImage
     }
 }
 

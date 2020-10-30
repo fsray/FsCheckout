@@ -2,11 +2,11 @@
 	<head>
 	<!--test comment! and a little more...-->
 	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, user-scalable=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<link href="styles/keyboard-style.css" rel="stylesheet" />
 	<link href="styles/base.css" rel="stylesheet">
 	<link href="styles/client.css" rel="stylesheet">
-	<script src="/scripts/decimal-field.js"></script>
 	</head>
 	<body>
 		<div class="dev">
@@ -27,12 +27,27 @@
 		})();
 
 	</script>
+	<script src="scripts/action_listener.js"></script>
   	<script src="scripts/keyboard_buffer.js"></script>
 	<script src="scripts/plugin/jquery-3.5.1.min.js"></script>
 	<script src="scripts/plugin/handlebars-4.7.6.min.js"></script>
 	<script src="scripts/templateManager.js"></script>
 	<script src="scripts/models.js"></script>
-	<script src="scripts/appLink.js"></script>
+	<script>
+		// dynamically link the correct appLink lib
+		(function(){
+			var script = document.createElement('script');
+			if (typeof CefSharp === 'object'){
+				script.src = "scripts/appLink-FS.js";
+			}
+			else {
+				script.src = "scripts/appLink.js";
+			}
+			document.head.appendChild(script);
+		})()
+	</script>
+
+	<!-- <script src="scripts/appLink.js"></script> -->
 	<script src="scripts/main.js"></script>
 	<script src="scripts/keyboard_module.js"></script>
 	<script>
