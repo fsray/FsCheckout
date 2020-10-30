@@ -80,8 +80,6 @@ appLink = (function(fake){
     function test_addToTransaction(item){
       var x = item.Clone();
       x.ItemId = this.lineCount++;
-      x.CanApply = true;
-      x.ApplyMessage = "Up to $30 off";
       //transaction.push(x);
       _transaction.unshift(x); // put item at the beginning
       getItemImage(x.ItemId);
