@@ -1,5 +1,4 @@
 {
-    "ClientLogo":"/images/hf-logo.png",
     "Customer_EnterEmail":"Enter your Email",
     "Customer_EnterPhone":"Enter your Phone #",
     "HelpText":"Need help with your transaction? <br>Ask a clerk to assist you.",
@@ -7,5 +6,19 @@
     "ScanInstructions":"Scan your items",
     "Start_CustomerPrompt_Primary":"Have an Account?",
     "Start_CustomerPrompt_Secondary":"Scan your Account Card<br>or",
-    "TranactionComplete_Primary":"Thank you for shopping with us"
+    "TranactionComplete_Primary":"Thank you for shopping with us",
+    "Footer_NoCustomerHint": "Have an Account?",
+    "HelpButton":"Help",
+    "UnsetAccount":"Unlink Account",
+    "Asset.GiftCardScan":"/images/scan-icon.png",
+    "Asset.ClientLogo":"/images/hf-logo.png",
+    "Asset.HelpImage":"/images/help-icon.png",
+    "Asset.PinPadImage":"/images/pinpad-icon.png",
+    "Asset.PinArrow":"/images/arrow.png",
+    "Asset.StartScanImage":"/images/scan-icon.png",
+    "Asset.ImageLoading":"https://hfproduction.fieldstack.com/Themes/Hollywoodfeed/Content/Images/HF-RED_horiz.png",
+    "Asset.ImageNotFound":"",
+    "Setting.FinalizeTimer.ReceiptChosen":3000,
+    "Setting.FinalizeTimer.ReceiptUnknown":15000,
+    "Setting.FinalizeTimer.Idle":900000
 }

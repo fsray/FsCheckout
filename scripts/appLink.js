@@ -1,5 +1,4 @@
-
-var appLink = (function(fake){
+appLink = (function(fake){
   
     var itemRepository = [];
     var customerRepository = [];
@@ -7,7 +6,7 @@ var appLink = (function(fake){
 
     this.lineCount = 0;
 
-    var transaction = [];
+    var _transaction = [];
     var _customer = null;
 
     var settings = {
@@ -31,6 +30,14 @@ var appLink = (function(fake){
     }
     
     generateTestData();
+    // (function() {
+    //   for(var i = 0; i < 5; i++){
+    //     var item = itemRepository[i % itemRepository.length];
+    //     if (item){
+    //       test_addToTransaction(item);
+    //     }
+    //   }
+    // })();
     
     function coupon(name,price, upc){
       var c = new itemModel();
@@ -48,9 +55,10 @@ var appLink = (function(fake){
       item.Description = title;
       item.PriceCurrent = price;
       item.Quantity = quantity;
-      item.ImageUrl = "/images/test-item.png";
+      item.ImageUrl = templateManager.GetLocaleString("Asset.ImageLoading");
       item.Identifier = upc;
       
+      console.log(item);
       return item;
     }
     
@@ -72,7 +80,11 @@ var appLink = (function(fake){
     function test_addToTransaction(item){
       var x = item.Clone();
       x.ItemId = this.lineCount++;
-      transaction.push(x);
+      x.CanApply = true;
+      x.ApplyMessage = "Up to $30 off";
+      //transaction.push(x);
+      _transaction.unshift(x); // put item at the beginning
+      getItemImage(x.ItemId);
       return x.ItemId;
     }
     
@@ -81,6 +93,9 @@ var appLink = (function(fake){
     function getCustomer(phone, email){
       _customer = new customerModel();
 
+      return new Promise((resolve)=>{
+
+      
         if (phone){
           for(var i = 0; i < customerRepository.length; i++){
             if (customerRepository[i].Phone.indexOf(phone) > -1){
@@ -90,7 +105,7 @@ var appLink = (function(fake){
         }
         else if (email){
           for(var i = 0; i < customerRepository.length; i++){
-            if (customerRepository[i].Email.toLowerCase.indexOf(email.toLowerCase()) > -1){
+            if (customerRepository[i].Email.toLowerCase().indexOf(email.toLowerCase()) > -1){
               _customer = customerRepository[i];
             }
           }
@@ -99,7 +114,9 @@ var appLink = (function(fake){
           _customer = customer;
         }
 
-        return _customer;
+        resolve( _customer);
+
+      });
     }
 
 
@@ -113,196 +130,337 @@ var appLink = (function(fake){
 
       // nothing found
       return null;
-    }
+    }    
 
-    
-
-    function getCurrentCustomer(){
+    async function getCurrentCustomer(){
       // returns the current customer as a model
-      return _customer == null ? new customer() : _customer;
+      return new Promise((resolve)=>{
+        var c = new customerModel();
+        c.IsEmpty = true;
+
+        resolve(_customer == null ? c : _customer);
+      })
     }
 
-    function addCustomerToTransaction_Phone(input){
+    async function addCustomerToTransaction_Phone(input){
       // search for a customer
       // set the transaction customer to this, or return empty customer if none found
 
-      return getCustomer(input, null);
+      return await getCustomer(input, null);
     }
 
-    function addCustomerToTransaction_Email(input){
+    async function addCustomerToTransaction_Email(input){
       // search for a customer
       // set the transaction customer to this, or return empty customer if none found
 
-      return getCustomer(null, input);
+      return await getCustomer(null, input);
     }
 
-    function addItemToTransaction(input){
+    async function addItemToTransaction(input){
       // search for an item
       // add the item to the transaction if found
       // return null if nothing found
-
-      return getItem(input);
+      return new Promise((resolve)=>{
+        resolve(getItem(input));
+      })
     }
 
-    function getTransactionItems(){
+    async function getTransactionItems(){
+      return new Promise((resolve)=>{
+        resolve(_transaction);
+      })
        //return the transaction items for the display
-      return transaction;
     }
 
-    function getTotals(){
+    function getTransactionItemById(id){
+        for(var i = 0; i < _transaction.length; i++){
+          if (_transaction[i].ItemId == id){
+              return _transaction[i];
+          }
+        }
+        return null;      
+    }
+
+    // this is to kinda simulate the FS way of async loading the image.. 
+    function getItemImage(id){
+
+      // simulate async image load, 500ms
+      setTimeout(function(){
+
+          let det = {
+            "itemId":id,
+            "image":"/images/test-item.png"
+          };
+          
+          // update the image on the object
+          for(var i = 0; i < _transaction.length; i++){
+            if (_transaction[i].ItemId == id){
+              _transaction[i].ImageUrl = det.image;
+              break;
+            }
+          }
+        
+          // fs supplies this object as a string
+          let ret = JSON.stringify(det);
+
+          // FS does call this method directly! Otherwise, appLink shouldn't reference 'app' at all. 
+          app.ImageLoad(ret);
+
+       },500);
+      
+    }
+
+    async function getTotals(){
       var t = new transactionTotalModel();
       
       // returns a Totals model
 
-      for(var i = 0; i < transaction.length; i++){
-        console.log(transaction[i]);
-        t.Subtotal += transaction[i].PriceCurrent;
-        t.ItemCount = i;
+      for(var i = 0; i < _transaction.length; i++){
+        t.Subtotal += _transaction[i].PriceCurrent * _transaction[i].Quantity;
+        t.ItemCount = i+1;
       }
       
       t.Tax = t.Subtotal * .00; // tax rate
       t.Total = t.Subtotal + t.Tax;
       
-      return t;
-      
+      return new Promise((resolve)=>{
+        resolve(t);
+      })
+
     }
 
-    function addCouponToTransaction(input){
+    async function addCouponToTransaction(input){
       // look for a coupon
       // if we find one, add it to the transaction
       // otherwise, return null
-      for(var i = 0; i < couponRepository.length; i++){
-        if (couponRepository[i].Identifier.indexOf(input) > -1){
-            test_addToTransaction(couponRepository[i]);
-            return "SUCCESS";
+
+      return new Promise((resolve)=>{
+        for(var i = 0; i < couponRepository.length; i++){
+          if (couponRepository[i].Identifier.indexOf(input) > -1){
+              test_addToTransaction(couponRepository[i]);
+              resolve("SUCCESS");
+          }
         }
-      }
+        resolve(null);
+      })
+      
 
       // nothing found
       return null;
     }
 
-    function removeItemFromTransaction(itemId){
+    async function removeItemFromTransaction(itemId){
       // remove this ItemId from the transaction list
-      for(var i = 0; i < transaction.length; i++){
-        if (transaction[i].ItemId === itemId){
-          transaction = transaction.splice(i,1);
+
+      return new Promise((resolve)=>{
+        for(var i = 0; i < _transaction.length; i++){
+          if (_transaction[i].ItemId === toNumber(itemId)){
+            _transaction.splice(i,1);
+            resolve(true);
+          }
         }
-      }
+
+      })
+      
     }
 
-    function getPriceOverrideReasonList(itemId) {
+    async function getPriceOverrideReasonList(itemId) {
       // itemId is kind of optiona... but return a list of reasons for the screen.
       // up to 4?
 
-      var adminList = [
-        {"Caption":"Price Match","ReasonId":1},
-        {"Caption":"Damaged","ReasonId":2},
-        {"Caption":"Wrong Price Marked","ReasonId":3},
-        {"Caption":"Approaching Expiration/Discontinued","ReasonId":4},
-        {"Caption":"Frequent Feeder Adjustment","ReasonId":5},
-      ]
+      return new Promise((resolve)=>{
+        var adminList = [
+          {"Caption":"Price Match","ReasonId":1},
+          {"Caption":"Damaged","ReasonId":2},
+          {"Caption":"Wrong Price Marked","ReasonId":3},
+          {"Caption":"Approaching Expiration/Discontinued","ReasonId":4},
+          {"Caption":"Frequent Feeder Adjustment","ReasonId":5},
+        ]
 
-      return adminList;
+        resolve(adminList);
+      })
 
     }
 
-    function cleanInput(input){
+    function toNumber(input){
       if (input == null){
         return;
       }
-      return input.replace('$','').replace('%','');
+
+    if (typeof input === 'number'){
+      return input;
     }
 
-    function applyPriceOverride(adminRequest){
+      var stripped = input.replace('$','').replace('%','');
+      return parseFloat(stripped);
+    }
+
+    async function applyPriceOverride(adminRequest){
       // apply this price to the ItemId
       // reasonId should maybe be a message
       // and possibly this should change to a PriceOverrideRequest model
-      var id = adminRequest.ItemId;
-      for(var i = 0; i < transaction.length; i++){
-        if (transaction[i].ItemId == id){
-          transaction[i].PriceCurrent = cleanInput(adminRequest.RequestAmount);
-          break;
+
+      return new Promise((resolve,error)=>{
+        var id = adminRequest.ItemId;
+        var item = getTransactionItemById(id);
+        if (item != null){
+          item.PriceOriginal = item.PricCurrent;
+          item.PriceCurrent = toNumber(adminRequest.RequestAmount);
+          resolve(true);
         }
-      }
+        else {
+          error('Error encountered');
+        }
+        
+      })
 
+      
     }
 
-    function applyDiscountDollar(adminRequest){
+    async function applyDiscountDollar(adminRequest){
       // change the price of the itemId to this amount
+
+      return new Promise((resolve,error)=>{
+        var item = getTransactionItemById(adminRequest.ItemId);
+        if (item != null){
+          item.PriceOriginal = item.PricCurrent;
+          item.PriceCurrent = item.PriceCurrent - toNumber(adminRequest.RequestAmount);
+          resolve(true);
+        }
+      })
+      
     }
 
-    function applyDiscountPercent(adminRequest){
+    async function applyDiscountPercent(adminRequest){
       // discount the itemId's price by this amount
+
+      return new Promise((resolve,error)=>{
+        var item = getTransactionItemById(adminRequest.ItemId);
+        if (item != null){
+          item.PriceOriginal = item.PricCurrent;
+          item.PriceCurrent = item.PriceCurrent * toNumber(adminRequest.RequestAmount);
+          resolve(true);
+        }
+      })
+      
     }
 
-    function changeQuantity(adminRequest){
+    async function changeQuantity(adminRequest){
       // adjust the item Quantity to this number
       // front end validation for 0?
+      return new Promise((resolve)=>{
+        var item = getTransactionItemById(adminRequest.ItemId);
+        if (item != null){
+          item.Quantity = toNumber(adminRequest.RequestAmount);
+          resolve(true);
+        }
+      })
+      
     }
 
-    function transactionClearItems(){
+    async function transactionClearItems(){
       // remove all items from the transaction
-      transaction = [];
+      return new Promise((resolve)=>{
+        _transaction = [];
+        resolve(true);
+      })
+      
     }
 
-    function transactionUnlinkCustomer(){
+    async function transactionUnlinkCustomer(){
       // remove the customer from this transaction.
       // this may affect coupons, loyalty, credit
-      _customer = new customerModel();
+      return new Promise((resolve,error)=>{
+        _customer = new customerModel();
+        resolve(true);
+      })
+      
     }
 
-    function applyGiftCard(input){
+    async function applyGiftCard(input){
       // search to see if this is a valid gift card
       // apply the gift card to the transaction
       // adjust the customer's available credit to have leftover
     }
 
-    function applyLoyaltyProgram(itemId){
+    async function applyLoyaltyProgram(itemId){
       // I think these will be tied to a line-item, 
       //  so should be able to do the apply with just this info
     }
 
-    function validateEmployee(username, password){
+    async function validateEmployee(username, password){
       // return true/false if this passes the FS validation
     }
 
-    function getAdminOptionsForItem(itemId){
+    async function getAdminOptionsForItem(itemId){
       // probably some actions are not valid for some items, 
       //  like adjusting the price on a coupon?
 
-      var item = null;
-      for(var i = 0; i < transaction.length; i++){
-        if (transaction[i].ItemId === itemId)
-          item = transaction[i];
-          break;
-      }
-
-      var actions = new adminActions();
-      if (itemId == 1){
-        return actions; // just for testing...
-      }
-      actions.CanChangeQuantity = true;
-      actions.CanDiscountAmount = true;
-      actions.CanDiscountPercent = true;
-      actions.CanPriceOverride = true;
-      actions.CanRemoveItem = true;
-
-      return actions;
+      return new Promise((resolve)=>{
+        var item = null;
+        for(var i = 0; i < _transaction.length; i++){
+          if (_transaction[i].ItemId === itemId)
+            item = _transaction[i];
+            break;
+        }
+  
+        var actions = new adminActions();
+        if (itemId == 1){
+          return actions; // just for testing...
+        }
+        actions.CanChangeQuantity = true;
+        actions.CanDiscountAmount = true;
+        actions.CanDiscountPercent = true;
+        actions.CanPriceOverride = true;
+        actions.CanRemoveItem = true;
+  
+        resolve(actions);
+      })
 
     }
 
-    function settings_RequiresPriceOverrideReason() {
-      return settings.RequiresPriceOverrideReason;
+    async function settings_RequiresPriceOverrideReason() {
+      return new Promise((resolve)=>{
+        resolve(settings.RequiresPriceOverrideReason);
+      })
+      
     }
 
-    function ScanHandle(value){
-      if (value === 'admin'){
-        return "ADMIN";
-      }
-      // also has "REFRESH" hooked in... /shrug
+    async function ScanHandle(value){
+
+      return new Promise((resolve)=>{
+        if (value === 'admin'){
+         resolve("ADMIN");
+        }
+        else if (value === 'gift'){
+          var i = item("GIFT CARD","",-4.00,1,"GIFT");
+          test_addToTransaction(i);
+          resolve("REFRESH");
+        }
+        else {
+          var i = item("SCANNED","ITEM",4.99,1,"scanned");
+          test_addToTransaction(i);
+          resolve("REFRESH");
+        }
+      })
+      
+    }
+
+    async function transactionClearCheck() {
+      return new Promise((resolve)=>{
+        resolve(true);
+      })
+
     }
     
+    async function transactionReset() {
+      // totally reset the transaction
+      _transaction = [];
+      _customer = null;
+      return new Promise((resolve)=>{
+        resolve(true);
+      });
+    }
     
     return {
       AddCustomerToTransaction_Phone: addCustomerToTransaction_Phone,
@@ -326,7 +484,9 @@ var appLink = (function(fake){
       GetCurrentCustomer: getCurrentCustomer,
       
       GetScanAction: ScanHandle,
-      Settings_RequiresPriceOverrideReason: settings_RequiresPriceOverrideReason
+      Settings_RequiresPriceOverrideReason: settings_RequiresPriceOverrideReason,
+      TransactionCanReset: transactionClearCheck,
+      TransactionReset: transactionReset
     }
     
   })();

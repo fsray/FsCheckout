@@ -1,20 +1,38 @@
 {{! itemList -- uses GetTransactionitems as model}}
 {{#each this}}
-<div class="item-row" >
+<div class="item-row" data-item-id="{{ItemId}}">
   <a href="javascript:void(0)" data-action="row_select" data-item-id={{ItemId}}>
-          <div class="item-img" ><img src="{{ImageUrl}}"></div>
-          <div class="item-name" >{{Title}} - {{Description}}</div>
-          {{#if (eq ItemId 1)}}
-          <div class="item-price-old">3.44</div>
-          <div class="item-price" >{{PriceCurrent}}</div>
-          {{else if (eq ItemId 2)}}
-          <div class="item-remove" data-action="item_remove">Remove</div>
-          {{else if (eq ItemId 3)}}
-          <div class="item-prompt" data-action="item_prompt">Up to 30% off</div>
-          <div class="item-price">{{PriceCurrent}}</div>
-          {{else}}
-          <div class="item-price" >{{PriceCurrent}}</div>
+          <div class="item-img" >
+            <img data-item-id="{{ItemId}}" src="{{ImageUrl}}" />
+          </div>
+          <div class="item-name" >{{Title}} - {{Description}}
+
+            {{#if (eq Quantity 1)}}
+            {{else}}
+            <span class="item-quantity">(x {{Quantity}})</span>
+            {{/if}}
+          </div>
+
+
+          {{#if CanApply}}
+          <div class="item-prompt" 
+              data-action="item_prompt" 
+              data-item-id="{{ItemId}}">{{ApplyMessage}}</div>
           {{/if}}
+          {{#if (eq CanRemove true)}}
+          <div class="item-remove" data-action="item_remove" data-item-id="{{ItemId}}">Remove</div>
+          {{/if}}
+
+          {{#if PriceOriginal}}
+            <div class="item-price-old">{{PriceOriginal}}</div>
+          {{/if}}
+          {{#if (eq IsOnSale true)}}
+            <div class="item-price sale" >{{PriceCurrent}}</div> 
+          {{else}}
+            <div class="item-price" >{{PriceCurrent}}</div>
+          {{/if}}
+          
+
   </a>
 </div>
 {{/each}}

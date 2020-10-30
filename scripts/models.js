@@ -64,6 +64,7 @@ function itemModel()
         n.IsOnSale = this.IsOnSale;
         n.IsCoupon = this.IsCoupon;
         n.Quantity = 1;
+        n.CanRemove = this.CanRemove;
         
         return n;
     }

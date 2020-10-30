@@ -82,12 +82,15 @@ var templateManager = (function(){
     }
 
     function renderTemplate(name,selector,data){
-        var t = getTemplateByName(name);
-        if (t != null && t.Template != null){
-            var temp = t.Template(data);
-            $(selector).html(temp);
-            addListeners(selector,data);
-        }
+        return new Promise((resolve,error)=>{
+            var t = getTemplateByName(name);
+            if (t != null && t.Template != null){
+                var temp = t.Template(data);
+                $(selector).html(temp);
+                addListeners(selector,data);
+            }
+            resolve(true);
+        });
     }
 
     function addListeners(temp,data){
@@ -98,6 +101,9 @@ var templateManager = (function(){
             for(var j = 0; j < actions.length; j++){
                 if (actions[j].ActionName === k){
                     all[i].addEventListener('click',actions[j].Action);
+                    all[i].addEventListener('click',function(){
+                        actionListener.ActionHappened(actionListener.ACTION_TYPE.BUTTON_CLICK);
+                    })
                 }
             }
         }
@@ -126,10 +132,10 @@ var templateManager = (function(){
     if (typeof FieldStack === 'object'){
         templateLoader = async function(path,name){
             return FieldStack.templateLoader(path,name);
-            // var r = await FieldStack.templateLoader(path,name);
-            //  if (r != null){
-			// 	 templateList.push(new template(path,r,name));
-            //  }
+        }
+
+        loadClientResources = async function(){
+            return FieldStack.templateLoader('/scripts/LocaleStrings.json','_resources');
         }
     }
 
@@ -143,7 +149,7 @@ var templateManager = (function(){
 
     function applyLocaleStrings(template,locales){
         for(var prop in locales){
-            template = template.split('{' + prop + '}').join(locales[prop]);
+            template = template.split('[' + prop + ']').join(locales[prop]);
         }
 
         return template;
@@ -157,13 +163,28 @@ var templateManager = (function(){
             resolve(true);
         });
     }
+    
+    function findClientResource(name, def){
+        if (name == null){
+            return def;
+        }
+
+        for(var prop in localeStrings){
+            if (prop.toLowerCase() === name.toLowerCase()){
+                return localeStrings[prop];
+            }
+        }
+
+        return def;
+    }
 
     return {
         AddTemplate: addTemplate,
         FindTemplate: findTemplate,
         GetTemplate: getTemplateByName, // search by name
         Render: renderTemplate, // name, selector, json data
-        Init: loadTemplates // load all the templates!
+        Init: loadTemplates, // load all the templates!
+        GetLocaleString: findClientResource
     }
 })()
 

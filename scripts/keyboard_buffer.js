@@ -37,6 +37,9 @@ var keyboard_buffer = (function(){
       if (event){
         if (event.key === "Enter"){
           app.Background_ScanHandle(el.value);
+          
+          actionListener.ActionHappened(actionListener.ACTION_TYPE.SCAN_HAPPENED);
+
           keyboard_monitor(el.value);
           el.value = '';
         }

@@ -1,7 +1,7 @@
 
 {{#if ShowHelp}}
 <div class="left-btn">
-    <button class="btn" data-action="help_show">Help</button>
+    <button class="btn" data-action="help_show">[HelpButton]</button>
 </div>
 {{/if}}
 {{#if (eq ContextMode 0)}}
@@ -16,7 +16,7 @@
 <div class="user-text">{{CustomerMessage}}</div>
 <div class="right-btn">
     <span>Not you?</span> 
-    <button class="btn" data-action="customer_unlink">Unlink Account</button>
+    <button class="btn" data-action="customer_unlink">[UnsetAccount]</button>
 </div>
 {{/if}}
 {{#if (eq ContextMode 2)}}
