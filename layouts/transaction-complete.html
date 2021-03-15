@@ -1,14 +1,29 @@
 <div class="thank-you">
-  <div class="hf-logo">
+  <div class="client-logo-image">
     <img src="[Asset.ClientLogo]" alt="client-image">
   </div>
   <div class="thank-you-content">
-  <h2>[TranactionComplete_Primary]</h2>
+  <h2>[TransactionComplete_Primary]</h2>
   <h3>Please take your items</h3>
-  <h3>Would you like your receipt?</h3>
+  {{#if Message}}
+    <div class="transaction-message">{{Message}}</div>
+  {{/if}}
+  {{#if ReceiptEmailed}}
+    <div class="receipt-emailed">Receipt sent to: <span class="receipt-emailed-recipient">{{ReceiptEmailedTo}}</span></div>
+  {{else if ReceiptPrinted}}
+  {{else}}
+    <h3>Would you like your receipt?</h3>
+  {{/if}}
+  
   <div class="flex-row">
-    <button class="btn brand-white" data-action="{{OnCancel}}">No</button>
-    <button class="btn brand-primary" data-action="{{OnSubmit}}">Yes</button>
+    {{#if ReceiptPrinted}}
+    <button class="btn brand-white" data-ignore-click="true" data-action="{{OnSubmit}}">Print Receipt</button>
+    {{else if ReceiptEmailed}}
+    <button class="btn brand-white" data-ignore-click="true" data-action="{{OnSubmit}}">Print Receipt</button>
+    {{else}}
+    <button class="btn brand-white" data-ignore-click="true" data-action="{{OnCancel}}">No</button>
+    <button class="btn brand-primary" data-ignore-click="true" data-action="{{OnSubmit}}">Yes</button>
+    {{/if}}
   </div>
   </div>
 </div>

@@ -7,8 +7,19 @@
     <span>Tax</span>
     <span>{{Tax}}</span>
   </div>
+  {{#if Credit}}
+  <div class="totals-row credit">
+    <span>Credit</span>
+    <span>{{Credit}}</span>
+  </div>
+  {{/if}}
   <span class="divider"></span>
+
   <div class="totals-row grand-total">
+    {{#if GiftCreditRemaining}}
+    <span>Credit Remaining</span>
+    {{else}}
     <span>Total</span>
+    {{/if}}
     <span>{{Total}}</span>
   </div>

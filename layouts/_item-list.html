@@ -3,11 +3,12 @@
 <div class="item-row" data-item-id="{{ItemId}}">
   <a href="javascript:void(0)" data-action="row_select" data-item-id={{ItemId}}>
           <div class="item-img" >
-            <img data-item-id="{{ItemId}}" src="{{ImageUrl}}" />
+            <img data-item-id="{{ItemId}}" src="{{ImageUrl}}" onerror="app.ImageError(this)"/>
           </div>
-          <div class="item-name" >{{Title}} - {{Description}}
+          <div class="item-name" >{{Title}}
 
-            {{#if (eq Quantity 1)}}
+            {{#if (eq Quantity 0)}}
+            {{else if (eq Quantity 1)}}
             {{else}}
             <span class="item-quantity">(x {{Quantity}})</span>
             {{/if}}
@@ -19,19 +20,17 @@
               data-action="item_prompt" 
               data-item-id="{{ItemId}}">{{ApplyMessage}}</div>
           {{/if}}
-          {{#if (eq CanRemove true)}}
+          {{#if CanRemove}}
           <div class="item-remove" data-action="item_remove" data-item-id="{{ItemId}}">Remove</div>
           {{/if}}
+          {{#if QuantityPrompt}}
+          <div class="item-quantityChange" data-action="item_quantity" data-item-id="{{ItemId}}">Qty</div>
+          {{/if}}
 
-          {{#if PriceOriginal}}
-            <div class="item-price-old">{{PriceOriginal}}</div>
-          {{/if}}
           {{#if (eq IsOnSale true)}}
-            <div class="item-price sale" >{{PriceCurrent}}</div> 
-          {{else}}
-            <div class="item-price" >{{PriceCurrent}}</div>
+          <div class="item-price-old">{{PriceOriginal}}</div>
           {{/if}}
-          
+          <div class="item-price" >{{PriceCurrent}}</div>
 
   </a>
 </div>

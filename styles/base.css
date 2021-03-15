@@ -8,7 +8,9 @@
 ----- Reset ----- 
 ---------------- */
 :root {
-  --colorPrimary:#74BF1D;
+  --colorPrimary:#306491;
+  --loadingFrom:#bdbdbd;
+  --loadingTo:#686767;
 }
 /* Box sizing rules */
 *,
@@ -252,7 +254,8 @@ h3 { font-size: 40px; }
 .start-logo img {
   display: block;
   margin: 0 auto;
-  width: 220px;
+  max-width: 220px;
+  max-height:100px;
 }
 
 .start h1 {
@@ -363,6 +366,15 @@ h3 { font-size: 40px; }
   background: #fff;
   margin-left:auto;
 }
+.item-row .item-quantityChange {
+  border: 4px solid #8286ff;
+  padding: 10px;
+  border-radius: 6px;
+  color: #8286ff;
+  background: #fff;
+  margin-left:10px;
+}
+
 .item-prompt {
   border: 4px solid #38d138;
   font-size: 80%;
@@ -378,7 +390,8 @@ h3 { font-size: 40px; }
 .item-row .item-price-old {
   text-decoration: line-through;
   position: relative;
-  margin-left:40%;
+  margin-left:10px;
+  /* margin-left:40%; */
 }
 
 
@@ -387,6 +400,8 @@ h3 { font-size: 40px; }
   max-width: 85px;
   margin-right: 15px;
   display:flex;
+  width: 85px;
+  height: 85px;
 }
 
 .item-img img {
@@ -397,14 +412,15 @@ h3 { font-size: 40px; }
 }
 
 .item-name {
-  width: 620px;
+  /* width: 620px; */
   text-transform: uppercase;
+  flex-grow:1;
 }
 
 .item-price {
   text-align: right;
   margin-left:10px;
-  flex-grow:1;
+  /* flex-grow:1; */
 }
 
 span.item-quantity {
@@ -451,7 +467,7 @@ span.divider {
   flex-direction:column;
 }
 
-.hf-logo img {
+.client-logo-image img {
   display: block;
   margin: 0 auto;
   width: 200px;
@@ -459,7 +475,7 @@ span.divider {
 .right-flex {
   display:flex;
   height:100%;
-  align-items: flex-end;
+  flex-direction:column;
 }
 
 .right-col .flex-row {
@@ -503,6 +519,9 @@ span.divider {
 
 .flex-bottom-align {
   flex-grow:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
 }
 
 /* -----------------
@@ -581,6 +600,10 @@ span.divider {
   align-items: center;
 }
 
+.disabled {
+  pointer-events: none;
+}
+
 .store-mode-options .btn.disabled {
   color: #a8adae;
 }
@@ -622,10 +645,15 @@ span.divider {
 ------------------ */
 .help {
   background-color: #e6e4e4;
-  padding-top: 25px;
   display:flex;
   height:100%;
   flex-direction:column;
+}
+.help .help-wrap {
+  height:100%;
+}
+.help .client-logo-image {
+  padding-top: 25px;
 }
 .help-icon img {
   display: block;
@@ -640,6 +668,18 @@ span.divider {
 .help .footer {
   justify-content: flex-end;
   margin-top:auto;
+}
+
+
+.help-error .help-wrap {
+  border:30px solid red;
+  animation:border_blink 2s infinite;
+}
+@keyframes border_blink {
+  
+  50% {
+    border-color:transparent;
+  }
 }
 
 /* -------------------
@@ -689,23 +729,58 @@ span.divider {
 ------ Thank You ------- 
 ---------------------- */
 .thank-you {
-  padding-top: 25px;
+  display:flex;
+  flex-direction:column;
+  height:100%;
   text-align: center;
+}
+
+.thank-you .client-logo-image {
+  padding-top: 25px;
+  padding-bottom: 25px;
+}
+
+.thank-you-content {
+  display: flex;
+  flex-direction: column;
+  /* height: 100%; */
+  /* width: 100%; */
+  flex-grow: 1;
+  /* height: 100%; */
+  justify-content: space-evenly;
 }
 
 .thank-you h2 {
   font-weight: normal;
-  margin-top: 130px;
 }
 
 .thank-you h3 {
   font-weight: regular;
-  margin-top: 70px;
+}
+
+.thank-you .transaction-message {
+  border: 1px solid #336e14;
+  padding: 20px;
+  border-radius: 1px;
+  font-size: 120%;
+  background: #efefef;
+  font-weight:bold;
+  align-self:center;
+}
+
+.thank-you .receipt-emailed {
+  font-size:120%;
+}
+
+.thank-you .receipt-emailed-recipient {
+  font-family: monospace;
+  font-weight: bold;
 }
 
 .thank-you .flex-row {
   justify-content: center;
-  margin-top: 80px;
+  flex-grow:1;
+  max-height:40vh;
 }
 
 .thank-you .flex-row .btn {
@@ -731,7 +806,8 @@ span.divider {
 
 .dev {
   position:absolute;
-  display:block;
+  /* display:block; */
+  display:none;
   top:0;
   right:0;
 }
@@ -772,3 +848,53 @@ decimal-field {
   color:#888;
   border:1px solid #696969;
 }
+
+/* ADMIN PRETRANSACTION PAGE*/
+.admin-pretransaction {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+.admin-pretransaction .client-logo-image {
+  margin: 45px;
+}
+.admin-pretransaction .admin-actions {
+    width:100%;
+    justify-content:center;
+}
+.admin-pretransaction .admin-actions .btn {
+  padding:75px;
+  margin:10px;
+  min-width:350px;
+  color:#4A90E2;
+  background-color:#fff;;
+}
+ul.loyalty-programs {
+  margin-top:20px;
+  overflow:auto;
+}
+
+.reward-row .btn.credit-in-use {
+  border: 2px solid #848484;
+  background: #cfcfcf;
+  color: #373737;
+}
+
+.action-clicked {
+  pointer-events: none !important;
+  /* background-color:#9f9f9f !important; */
+  border:1px solid #7f7f7f !important;
+  background-size:200% 200% !important;
+  background-image: linear-gradient(to right,var(--loadingFrom), var(--loadingTo), var(--loadingFrom)) !important;
+  /* animation:loading_gradient 1.5s ease infinite; */
+}
+@keyframes loading_gradient {
+  0% {
+    background-position:10% 50%;
+  }
+  100% {
+    background-position:210% 0%;
+  }
+}
+

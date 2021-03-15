@@ -1,20 +1,37 @@
 {{! tran-right -- uses CurrentCustomer as model}}
-<div class="right-flex">
-    <div class="flex-bottom-align">
-    <div class="spacer"></div>       
 
-    <div class="flex-row enter-item">
-        <button data-action="action_enterItem" class="btn brand-primary">Enter Item Number</button>
-    </div>
-    <div class="flex-row reward-row">
-        <button data-action="action_redeemGiftCard" class="btn">Redeem a Giftcard</button>
-        {{#if (eq IsEmpty 0)}}
-        <button data-action="action_addCredit" class="btn">{{StoreCredit}} Credit</button>
-        {{/if}}
-        <button data-action="action_addCoupon" class="btn">Add a Coupon</button>
-    </div>
-    <div class="flex-row finish">
-        <button data-action="finish_pay" class="btn product-green btn-large">Finish and Pay</button>
-    </div>
+<div class="right-flex">
+    {{#if LoyaltyProgramItems}}
+        <ul class="loyalty-programs">
+            {{#each LoyaltyProgramItems}}
+                <li>{{Title}}</li>
+            {{/each}}
+        </ul>
+    {{/if}}
+    <div class="flex-bottom-align">
+
+        <div class="flex-row enter-item">
+            <button data-action="action_enterItem" class="btn brand-primary">Enter Item Number</button>
+        </div>
+        <div class="flex-row reward-row">
+            <button data-action="action_redeemGiftCard" class="btn">Redeem a Giftcard</button>
+            {{#if (eq IsEmpty 0)}}
+                {{#if CreditAvailable}}
+                    {{#if (eq CustomerCreditInUse 0)}}
+                    <button data-action="action_addCredit" class="btn">{{CreditAvailable}} Credit</button>
+                    {{else}}
+                    <button data-action="action_addCredit" class="btn credit-in-use" disabled>Credit Applied</button>
+                    {{/if}}
+                {{/if}}
+            {{/if}}
+            <button data-action="action_addCoupon" class="btn">Add a Coupon</button>
+        </div>
+        <div class="flex-row finish">
+            {{#if PaymentNotRequired}}
+            <button data-action="finish_pay" class="btn product-green btn-large">Finish</button>
+            {{else}}
+            <button data-action="finish_pay" class="btn product-green btn-large">Finish and Pay</button>
+            {{/if}}
+        </div>
     </div>
 </div>

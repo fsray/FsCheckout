@@ -1,12 +1,29 @@
+{{#if HelpMessage}}
+<div class="help help-error">
+{{else}}
 <div class="help">
-  <div class="hf-logo">
+{{/if}}
+<div class="help-wrap">
+  <div class="client-logo-image">
     <img src="[Asset.ClientLogo]" alt="logo">
   </div>
   <div class="help-icon">
+    {{#if Offline}}
+    <img src="[Asset.OfflineImage]" alt="help icon">
+    {{else}}
     <img src="[Asset.HelpImage]" alt="help icon">
+    {{/if}}
   </div>
+  {{#if HelpMessage}}
+    <h3>{{HelpMessage}}</h3>
+  {{else}}
   <h3>[HelpText]</h3>
+  {{/if}}
+</div>
+{{#if NoFooter}}
+{{else}}
   <div class="footer">
     <button data-action="{{OnCancel}}" class="btn">Exit</button>
   </div>
+{{/if}}
 </div>

@@ -1,161 +1,179 @@
-
 /*
 $(document).bind("contextmenu", function(e) {
         e.preventDefault();
     });
 */
 
-function numeric_helper(isDecimal, maxValue, prefix, append) {
-    
+/**
+ * Helper fn to control the UI flow of Numeric input
+ * @param {any} isDecimal -- Money or Percent? !isDecimal will act as Integer
+ * @param {any} maxValueInt -- Do not allow input over this integer value. Generally used to restrict Percent to <= 100%
+ * @param {any} prefix -- '$' to display as Money
+ * @param {any} append -- '%' to display as Percent
+ */
+function numeric_helper(isDecimal, maxValueInt, prefix, append) {
+
     // helper to flip 'undefined' values
-    this._fixUndefined = function(v,def){
-      if (def === undefined){
-        def = ''
-      }
-      
-      if (v === undefined || v === null){
-        return def;
-      }
-      
-      return v;
+    this._fixUndefined = function(v, def) {
+        if (def === undefined) {
+            def = ''
+        }
+
+        if (v === undefined || v === null) {
+            return def;
+        }
+
+        return v;
     }
-  
+
     // IS_DECIMAL: allow editing INT and DECIMAL
-    this.IS_DECIMAL = this._fixUndefined(isDecimal,true);
+    this.IS_DECIMAL = this._fixUndefined(isDecimal, true);
     // don't allow INT to go above this value
-    this.MAX_VALUE = this._fixUndefined(maxValue,null);
-      
-    // helper to set default array
-    this._getBackerDefault = function() {
-        return [['0'],['0','0']];
-    }
-    
+    this.MAX_VALUE = this._fixUndefined(maxValueInt, null);
+
     // holds the current 'values' broken into array
-    this.backer = this._getBackerDefault();
+    this.backer = [];
     // separate INT from DECIMAL (visual)
     this.SEP_CHAR = '.';
+    // for UX of typing "3" "." -- input moves to hundredths.
+    this.decimal_position = -1;
 
     // for MONEY (visual)
     this.PREFIX = this._fixUndefined(prefix);
     // for PERCENT (visual)
     this.APPEND = this._fixUndefined(append);
-  
-    // INT or DECIMAL for AddCharacter
-    this.TARGET = 0;
 
-    // flip to editing INT or DECIMAL for AddCharacter
-    this.setTarget = function(m) {
-      if (!this.IS_DECIMAL){
-          // always stay in INT mode
-          this.TARGET = 0;
-      }
-      else {
-        this.TARGET = parseInt(m);
-      }
-    }
-
-    // targeting INT or DECIMAL?
-    this.getTarget = function() {
-        return this.TARGET;
-    }
-
-    // Only allow 2 characters in DECIMAL field
-    this.roundDecimal = function(x){
-        x = x.splice(x.length - 2);
-        while(x.length < 2){
-            x.push('0');
+    // return a '0' padded array (0.00)
+    this.clean_backer = function(x) {
+        let ret = x.slice(0).reverse();
+        console.log(ret, 'CLEAN');
+        for (let i = 0; i < 3; i++) {
+            if (typeof ret[i] === 'undefined') {
+                ret[i] = '0';
+            }
         }
-        return x;
+        return ret.reverse();
     }
 
-    // PUBLIC:
+    // set the backer to the MAX_VALUE
+    this.set_backer_to_max = function() {
+        let max = Array.from(this.MAX_VALUE.toString());
+        max = max.concat(['0', '0']);
+        this.backer = max;
+    }
 
-    // add a character to backer
-    this.AddCharacter = function(c){
-        // the DECIMAL section
-        if (this.TARGET === 1){
-            let current = this.backer[1];
-            current.push(c);
-            this.backer[1] = this.roundDecimal(current);
+    // check if an array is >= the MAX_VALUE
+    this.is_max = function(val) {
+        if (this.MAX_VALUE === null)
+            return false;
+
+        // check the 'INT' part
+        let current = this.backer.slice(0, this.backer.length - 2);
+
+        let max = Array.from(this.MAX_VALUE.toString());
+        if (current.length > max.length) {
+            return true;
         }
         else {
-          // the INT section
-            let current = this.backer[0];
-            if (current.length === 1 && current[0] === '0'){
-                current.pop();
-            }
-            current.push(c);
-          
-            // TODO: compare to MaxValue
-            if (this.MAX_VALUE != null){
-              let max = Array.from(this.MAX_VALUE.toString());
-              if (current.length > max.length){
-                current = max;
-              }
-              else {
-                try {
-                  let currValue = parseInt(current.join(''));
-                  let maxValue = parseInt(max.join(''));
-                  if (currValue > maxValue){
-                    current = max;
-                  }
+            try {
+                let currValue = parseInt(current.join(''));
+                let maxValue = parseInt(max.join(''));
+                if (currValue >= maxValue) {
+                    return true;
                 }
-                catch {
-                  current = max;
-                }
-              }
             }
-          
-            this.backer[0] = current;
+            catch {
+                return true;
+            }
         }
     }
 
-    this.ClearValue = function() {
-        this.backer = this._getBackerDefault();
-        this.setTarget(0);
+    
+    // PUBLIC:
+    
+    // add a character to backer
+    this.AddCharacter = function(c) {
+
+        // if it was at max, clear it out!
+        if (this.is_max(this.backer)) {
+            this.ClearValue();
+        }
+
+        // don't need to pad with 0's.. ignore this input
+        if (c === '0' && !this.backer.length) {
+            return;
+        }
+
+        // Some UI logic here..
+        if (this.IS_DECIMAL) {
+            // for decimals, when user hits '.', we'll pop them to the hundredths
+            if (c === '.') {
+                this.backer.push('0', '0');
+                this.decimal_position = 0;
+            }
+            // after user hits '.', they are at "decimal_position 0"
+            else if (this.decimal_position == 0) {
+                // replace the last digit with c
+                this.backer.splice(this.backer.length - 1, 1, c);
+                this.decimal_position = 1;
+            }
+            // user is entering the 'tenths' now
+            else if (this.decimal_position == 1) {
+                // strip out the tenths
+                this.backer.splice(this.backer.length - 2, 1);
+                // push 'c' on the end
+                this.backer.push(c);
+                this.decimal_position = -1;
+            }
+            else {
+                // otherwise.. fine to continue!
+                this.backer.push(c);
+            }
+        }
+        else if (c === '.') {
+            // integers (percent) - don't allow decimal...
+        }
+        else if (!this.IS_DECIMAL && !this.backer.length) {
+            // since 'backer' is used to having .00, push that for integers (percent)
+            this.backer.push(c, '0', '0');
+        }
+        else {
+            // for integers (percent), 
+            // since 'backer' wants '00', strip them off and then push them back.
+            this.backer.splice(this.backer.length - 2, 2);
+            this.backer.push(c, '0', '0');
+        }
+
+        // if it's >= the max, set it to the max #!
+        if (this.is_max(this.backer)) {
+            this.set_backer_to_max();
+        }
     }
 
-    this.GetValue = function(){
+    // reset 'backer'
+    this.ClearValue = function() {
+        this.backer = [];
+    }
+
+    // get the "formatted" value
+    this.GetValue = function() {
+        let v = this.clean_backer(this.backer);
         var ret =
-            this.PREFIX 
-            + this.backer[0].join('') 
-            + (this.IS_DECIMAL ? 
-                this.SEP_CHAR 
-                + this.backer[1].join('')
+            this.PREFIX
+            + v.slice(0, v.length - 2).join('')
+            + (this.IS_DECIMAL ?
+                this.SEP_CHAR
+                + v.slice(v.length - 2).join('')
                 : '')
             + this.APPEND;
 
         return ret;
     }
 
-    this.SetValue = function(v){
-      let start = this._getBackerDefault();
-      
-      let x = v.indexOf('.');
-      
-      let int = start[0];
-      let dec = start[1];
-      
-      if (x > -1){
-        int = Array.from(v.substring(0,x));
-        dec = Array.from(v.substring(x+1));
-      }
-      else {
-        int = Array.from(v);
-      }
-      
-      this.backer[0] = int;
-      this.backer[1] = this.roundDecimal(dec);
-      
-    }
-
-    this.ToggleMode = function() {
-        if (this.TARGET === 0){
-            this.setTarget(1);
-        }
-        else {
-            this.setTarget(0);
-        }
+    // set the backer array to this number
+    this.SetValue = function(v) {
+        let x = v.replace('.', '');
+        this.backer = Array.from(x);
     }
 }
 
@@ -330,7 +348,8 @@ var kiosk = function () {
         onKeyPress = function (key,isAlt) {
             if (key) {
                 
-                actionListener.ActionHappened(actionListener.ACTION_TYPE.KEY_PRESS);
+                // actionListener.ActionHappened(actionListener.ACTION_TYPE.KEY_PRESS);
+                actionListener.EventTrigger(actionListener.ACTION_TYPE.KEY_PRESS);
 
                 if (!$(key).hasClass('disabled')) {
                     var keyData = $(key).data('key');
@@ -381,8 +400,8 @@ var kiosk = function () {
                             return;
                         }
                         if (keyData === 'dot'){
-                            if (deciHelper){
-                                deciHelper.ToggleMode();
+                            if (deciHelper) {
+                                deciHelper.AddCharacter('.');
                                 return;
                             }
                         }
@@ -432,7 +451,6 @@ var kiosk = function () {
                                     keyData = keyData.toString().toUpperCase();
                                 }
                                 if (deciHelper != null){
-                                    console.log('HERE I AM',deciHelper);
                                     deciHelper.AddCharacter(keyData.toString());
                                     $(document.keyboardInput).val(deciHelper.GetValue());
                                 }

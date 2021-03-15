@@ -100,10 +100,26 @@ var templateManager = (function(){
             var k = all[i].getAttribute('data-action');
             for(var j = 0; j < actions.length; j++){
                 if (actions[j].ActionName === k){
-                    all[i].addEventListener('click',actions[j].Action);
+                    // mark the button as 'disabled' first off
                     all[i].addEventListener('click',function(){
-                        actionListener.ActionHappened(actionListener.ACTION_TYPE.BUTTON_CLICK);
+                        var t = event.target;
+                        console.log(t);
+                        if (t && !t.getAttribute('data-action')){
+                            t = $(t).closest('btn[data-action]');
+                        }
+                        
+                        if (t.tagName === 'BUTTON' && t.getAttribute('data-ignore-click') == null){
+                            $(t).addClass('action-clicked');
+                        }
                     })
+                    // handle any attached 'actions'
+                    all[i].addEventListener('click',actions[j].Action);
+
+                    // make a sound!
+                    all[i].addEventListener('click',function(){
+                        actionListener.EventTrigger(actionListener.ACTION_TYPE.BUTTON_CLICK);
+                    });
+                   
                 }
             }
         }
@@ -114,6 +130,9 @@ var templateManager = (function(){
 
         function recurse(o,l){
             for(var prop in o){
+                if (!o.hasOwnProperty(prop))
+                    continue;
+                    
                 if (prop === 'ActionName'){
                     l.push(o);
                 }
@@ -131,11 +150,11 @@ var templateManager = (function(){
     // for c# Window.External override
     if (typeof FieldStack === 'object'){
         templateLoader = async function(path,name){
-            return FieldStack.templateLoader(path,name);
+            return FieldStack.TemplateLoader(path,name);
         }
 
         loadClientResources = async function(){
-            return FieldStack.templateLoader('/scripts/LocaleStrings.json','_resources');
+            return FieldStack.TemplateLoader('/scripts/LocaleStrings.json','_resources');
         }
     }
 
@@ -205,7 +224,8 @@ var templates = [
     ['/layouts/transaction-complete.html','transactionComplete'],
     ['/layouts/_admin-options.html','admin-panel'],
     ['/layouts/_admin-price-override.html','admin-priceOverride'],
-    ['/layouts/_footer.html','footer']
+    ['/layouts/_footer.html','footer'],
+    ['/layouts/admin-pretransaction.html','admin-preTransaction']
     //['/layouts/_keyboard-layout.html','keyboard'],
     //['/layouts/_keyboard-number.html','numeric'],
     //['/layouts/_customer-find-grid.html','customerSearchGrid'],

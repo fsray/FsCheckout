@@ -1,11 +1,14 @@
 appLink = (function(){
-    
-    /* 
-    templateLoader = async function(path,name){
-            return FieldStack.templateLoader(path,name);
-    */
 
    function copyToWebModel(src,targ){
+
+       if (typeof src === "string"){
+           try {
+            src = JSON.parse(src);
+           }
+           catch {}
+       }
+
         for(var prop in src){
             targ[prop] = src[prop];
         }
@@ -24,20 +27,20 @@ appLink = (function(){
 
     
     // takes the search term and applies the single customer result
+    // change to return GenericResponse
     async function addCustomerToTransaction(phone, email){
         var c = await FieldStack.AddCustomerToTransaction(phone, email);
-        var ret = new customerModel();
+        var ret = new genericResponse();
 		if (c != null){
 			c = JSON.parse(c);
 			copyToWebModel(c,ret);
-			ret.IsEmpty = false;
 		}
 		return ret;
     }
 
     async function addItemToTransaction(value) {
         var c = await FieldStack.AddItemToTransaction(value);
-        var ret = new itemModel();
+        var ret = new genericResponse();
         if (c != null){
             c = JSON.parse(c);
             copyToWebModel(c,ret);
@@ -72,7 +75,7 @@ appLink = (function(){
 
     async function addCouponToTransaction(value) {
         var x = await FieldStack.AddCouponToTransaction(value);
-        var ret = new itemModel();
+        var ret = new genericResponse();
         if (x != null){
             x = JSON.parse(x);
             copyToWebModel(x,ret);
@@ -101,18 +104,18 @@ appLink = (function(){
     }
 
     async function applyDiscountDollar(adminRequest){
-        var x = await FieldStack.ItemDiscountDollar(adminRequest.ItemId, adminRequest.RequestAmount);
+        var x = await FieldStack.ItemDiscountDollar(adminRequest.ItemId, adminRequest.RequestAmount, adminRequest.RequestId);
         return x;
     }
 
     async function applyDiscountPercent(adminRequest){
 
-        var x = await FieldStack.ItemDiscountPercent(adminRequest.ItemId, adminRequest.RequestAmount);
+        var x = await FieldStack.ItemDiscountPercent(adminRequest.ItemId, adminRequest.RequestAmount, adminRequest.RequestId);
         return x;
     }
 
     async function changeQuantity(adminRequest){
-        var x = await FieldStack.itemChangeQuantity(adminRequest.ItemId, adminRequest.RequestAmount);
+        var x = await FieldStack.ItemChangeQuantity(adminRequest.ItemId, adminRequest.RequestAmount);
         return x;
     }
 
@@ -139,7 +142,10 @@ appLink = (function(){
     }
 
     async function applyLoyaltyProgram(ItemId){
-
+        var x = await FieldStack.ApplyLoyaltyProgram(ItemId);
+        var ret = new genericResponse();
+        copyToWebModel(x,ret);
+        return ret;
     }
 
     // todo?
@@ -163,13 +169,12 @@ appLink = (function(){
 		if (c != null){
 			c = JSON.parse(c);
 			copyToWebModel(c,ret);
-			ret.IsEmpty = false;
 		}
 		return ret;
     }
 
-    async function ScanHandle(input){
-        var x = await FieldStack.ScanHandle(input);
+    async function ScanHandle(input, appState){
+        var x = await FieldStack.ScanHandle(input, appState);
         return x;
     }
 
@@ -179,6 +184,73 @@ appLink = (function(){
     async function transactionClearCheck() {
         var res = await FieldStack.TransactionClearCheck();
         return res;
+    }
+
+    async function transactionReset(ignoreErrors){
+        var x = await FieldStack.TransactionReset(ignoreErrors);
+        return x;
+    }
+
+    async function transactionReceiptPrint(doPrint){
+        await FieldStack.TransactionReceiptPrint(doPrint);
+    }
+
+    async function transactionFinalize(){
+        var x = await FieldStack.TransactionCanFinalize();
+        var canFinalize = new genericResponse();
+        canFinalize.SetError();
+        canFinalize.Message = "Unknown error occurred.";
+
+        if (x != null){
+
+            x = JSON.parse(x);
+            copyToWebModel(x, canFinalize);
+
+            // if we CAN finalize, give it a try!
+            if (canFinalize.IsSuccess()){
+
+                var r = await FieldStack.TransactionFinalize();
+                var finalizeResult = new paymentResult();
+                r = JSON.parse(r);
+                copyToWebModel(r,finalizeResult);
+                
+                return finalizeResult;
+            }
+            else {
+                return canFinalize;
+            }
+        }
+    }
+
+    function adminLaunchApplication() {
+        FieldStack.KioskModeExit();
+    }
+
+    async function adminDrawerClose() {
+        var x = await FieldStack.AdminDrawerClose();
+        return x;
+    }
+
+    async function applyStoreCredit() {
+        var x = await FieldStack.ApplyAvailableCredit();
+        var ret = new genericResponse();
+        if (x != null){
+            x = JSON.parse(x);
+            copyToWebModel(x,ret);
+        }
+        
+        return ret;
+    }
+
+    async function isTransactionInProgress() {
+        return await FieldStack.IsTransactionInProgress();
+    }
+
+    async function transactionCanFinalize() {
+        var x = await FieldStack.TransactionCanFinalize();
+        var ret = new genericResponse();
+        copyToWebModel(x,ret);
+        return ret;
     }
    
     
@@ -202,10 +274,18 @@ appLink = (function(){
         ValidateEmployee: validateEmployee,
         GetAdminActionsForItem: getAdminOptionsForItem,
         GetCurrentCustomer: getCurrentCustomer,
+        ApplyStoreCredit: applyStoreCredit,
         
         GetScanAction: ScanHandle,
         Settings_RequiresPriceOverrideReason: settings_RequiresPriceOverrideReason,
-        TransactionCanReset: transactionClearCheck
+        TransactionCanReset: transactionClearCheck,
+        TransactionReset: transactionReset,
+        TransactionReceiptPrint: transactionReceiptPrint,
+        TransactionFinalize: transactionFinalize,
+        TransactionCanFinalize: transactionCanFinalize,
+        AdminLaunchApplication: adminLaunchApplication,
+        AdminDrawerClose: adminDrawerClose,
+        IsTransactionInProgress: isTransactionInProgress
     }
     
 })();

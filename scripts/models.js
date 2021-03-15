@@ -1,3 +1,7 @@
+const _successMessage = "SUCCESS";
+const _errorMessage = "ERROR";
+const _paymentNotRequired = "NO_PAYMENT_REQUIRED";
+
 function inputModel(){
     this.Caption = "";
     this.OnCancel = null;
@@ -18,6 +22,7 @@ function transactionTotalModel(){
     this.Subtotal = 0;
     this.Discount =0;
     this.ItemCount = 0;
+    this.GiftCreditRemaining = null;
 }
 
 function customerModel(){
@@ -27,7 +32,11 @@ function customerModel(){
         this.IsEmpty= true;
         this.Email= null;
         this.Phone= null;
-        this.LastActive= null
+        this.LastActive= null;
+        this.LoyaltyProgramItems = []; // ItemModels that represent LoyaltyPrograms
+        this.CustomerCreditInUse = false;
+        this.PaymentNotRequired = false;
+
 }
 
 function itemModel()
@@ -53,6 +62,8 @@ function itemModel()
     this.OnRemove = null;
     this.OnApply = null;
 
+    this.QuantityPrompt = false;
+
     this.Clone = function (){
         var n = new itemModel();
         n.Title = this.Title;
@@ -64,7 +75,6 @@ function itemModel()
         n.IsOnSale = this.IsOnSale;
         n.IsCoupon = this.IsCoupon;
         n.Quantity = 1;
-        n.CanRemove = this.CanRemove;
         
         return n;
     }
@@ -90,6 +100,37 @@ function adminRequest(){
     this.RequestAmount = "";
     this.RequestItem = null;
     this.RequestId = null;
+}
+
+function genericResponse() {
+
+    this.Result = _errorMessage; // SUCCESS, ERROR -- defaulting to ERROR.
+    this.Message = null;
+
+    this.IsSuccess = function() {
+        return this.Result == _successMessage;
+    }
+    this.SetSuccess = function(){
+        this.Result = _successMessage;
+        return;
+    }
+    this.SetError = function(){
+        this.Result = _errorMessage;
+    }
+}
+
+function paymentResult(){
+    var x = new genericResponse();
+    x.ReceiptPrinted = false;
+    x.ReceiptEmailed = false;
+    x.ReceiptEmailedTo = null;
+    x.TransactionAborted = false;
+    return x;
+}
+
+function adminPriceChangeReason() {
+    this.Caption = null;
+    this.Id = null;
 }
 
 var requestTypeList = {
